@@ -1,0 +1,21 @@
+{
+    "Rotary_Torque": 11.418,
+    "Rotary_RPM": 100.0,
+    "Standpipe_Pressure": 3316.0,
+    "Weight_on_Bit": 27.3,
+    "Hook_Load": 126.3,
+    "Differential_Pressure": 584.5,
+    "Inclination": 90.3,
+    "Time_Of_Penetration": 0.3,
+    "Total_Mud_Volume": 398.9,
+    "Gamma_at_Bit": 320.0,
+    "Bit_Depth": 9349.0,
+    "Bit_RPM": 228.0,
+    "Line_Wear": 899.0,
+    "Block_Height": 80.6,
+    "Min_Pressure": 3273.0,
+    "Min_Hook_Load": 124.0,
+    "Min_Torque": 10.0,
+    "Min_RPM": 99.0,
+    "Min_WOB": 25.8
+}

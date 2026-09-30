@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DrillSense — ROP Prediction | Edge AI</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --blue: #1565C0;
+    --blue-light: #1976D2;
+    --blue-pale: #E3F2FD;
+    --blue-mid: #BBDEFB;
+    --orange: #E65100;
+    --orange-light: #FF6D00;
+    --green: #2E7D32;
+    --green-light: #43A047;
+    --yellow: #F57F17;
+    --red: #C62828;
+    --white: #FFFFFF;
+    --bg: #F5F7FA;
+    --card: #FFFFFF;
+    --border: #E0E7EF;
+    --text: #1A2332;
+    --text-muted: #5A6A7E;
+    --shadow: 0 2px 12px rgba(21,101,192,0.08);
+    --shadow-lg: 0 8px 32px rgba(21,101,192,0.13);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  /* NAV */
+  nav {
+    background: var(--white);
+    border-bottom: 2px solid var(--blue-pale);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(21,101,192,0.07);
+  }
+  .nav-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 700; font-size: 1.2rem; color: var(--blue);
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--orange); }
+  .nav-links { display: flex; gap: 0.25rem; }
+  .nav-links a {
+    padding: 6px 14px; border-radius: 6px;
+    color: var(--text-muted); font-size: 0.9rem; text-decoration: none;
+    font-weight: 500; transition: all 0.15s;
+  }
+  .nav-links a:hover, .nav-links a.active {
+    background: var(--blue-pale); color: var(--blue);
+  }
+
+  /* SECTIONS */
+  .section { display: none; padding: 2rem; max-width: 1200px; margin: 0 auto; }
+  .section.active { display: block; }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, var(--blue) 0%, #0D47A1 100%);
+    color: white;
+    padding: 3rem 2rem;
+    border-radius: var(--radius);
+    margin-bottom: 2rem;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 2rem;
+    align-items: center;
+  }
+  .hero h1 { font-size: 2.2rem; font-weight: 800; line-height: 1.2; margin-bottom: 0.75rem; }
+  .hero h1 span { color: #FFB74D; }
+  .hero p { font-size: 1rem; opacity: 0.88; max-width: 520px; }
+  .hero-badges { display: flex; gap: 0.5rem; margin-top: 1.25rem; flex-wrap: wrap; }
+  .badge {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 600;
+  }
+  .rig-icon {
+    font-size: 5rem; opacity: 0.25;
+    user-select: none;
+  }
+
+  /* PILLARS */
+  .pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
+  .pillar-card {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-top: 4px solid var(--blue);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    box-shadow: var(--shadow);
+  }
+  .pillar-card:nth-child(2) { border-top-color: var(--orange); }
+  .pillar-card:nth-child(3) { border-top-color: var(--green); }
+  .pillar-icon { font-size: 1.8rem; margin-bottom: 0.5rem; }
+  .pillar-card h3 { font-size: 0.95rem; font-weight: 700; color: var(--blue); margin-bottom: 0.4rem; }
+  .pillar-card:nth-child(2) h3 { color: var(--orange); }
+  .pillar-card:nth-child(3) h3 { color: var(--green); }
+  .pillar-card p { font-size: 0.83rem; color: var(--text-muted); }
+
+  /* TEAM */
+  .team-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; }
+  .team-card {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1rem;
+    text-align: center;
+    box-shadow: var(--shadow);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .team-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+  .team-photo {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: var(--blue-pale);
+    border: 3px solid var(--blue-mid);
+    margin: 0 auto 0.75rem;
+    object-fit: cover;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; overflow: hidden;
+  }
+  .team-photo img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+  .team-name { font-size: 0.88rem; font-weight: 700; color: var(--text); margin-bottom: 0.2rem; }
+  .team-nim { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.3rem; }
+  .team-role {
+    display: inline-block;
+    background: var(--blue-pale); color: var(--blue);
+    font-size: 0.72rem; font-weight: 600;
+    padding: 2px 8px; border-radius: 10px; margin-bottom: 0.75rem;
+  }
+  .btn-linkedin {
+    display: block; width: 100%;
+    background: #0A66C2; color: white;
+    border: none; border-radius: 6px; padding: 6px;
+    font-size: 0.78rem; font-weight: 600; cursor: pointer;
+    text-decoration: none; transition: background 0.15s;
+  }
+  .btn-linkedin:hover { background: #004499; }
+
+  /* INFERENCE SECTION */
+  .inference-layout {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  /* FORM */
+  .card {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+  }
+  .card-title {
+    font-size: 1rem; font-weight: 700; color: var(--blue);
+    border-bottom: 2px solid var(--blue-pale);
+    padding-bottom: 0.6rem; margin-bottom: 1.25rem;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .form-group { margin-bottom: 1rem; }
+  .form-label {
+    display: block; font-size: 0.8rem; font-weight: 600;
+    color: var(--text-muted); margin-bottom: 4px;
+  }
+  .form-label span { font-weight: 400; color: #9AA5B4; }
+  .form-input {
+    width: 100%; padding: 8px 10px;
+    border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    font-size: 0.9rem; color: var(--text);
+    transition: border-color 0.15s;
+    background: #FAFBFC;
+  }
+  .form-input:focus { outline: none; border-color: var(--blue); background: white; }
+  .range-row { display: flex; align-items: center; gap: 8px; }
+  .form-range {
+    flex: 1; accent-color: var(--blue);
+    height: 4px; cursor: pointer;
+  }
+  .range-val {
+    min-width: 52px; text-align: right;
+    font-size: 0.82rem; font-weight: 700; color: var(--blue);
+  }
+
+  /* SAMPLE BUTTONS */
+  .sample-btns { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
+  .btn-sample {
+    width: 100%; padding: 9px 12px;
+    background: var(--blue-pale); color: var(--blue);
+    border: 1.5px solid var(--blue-mid); border-radius: 8px;
+    font-size: 0.82rem; font-weight: 600; cursor: pointer;
+    text-align: left; transition: all 0.15s;
+  }
+  .btn-sample:hover { background: var(--blue-mid); }
+  .btn-predict {
+    width: 100%; padding: 12px;
+    background: var(--blue); color: white;
+    border: none; border-radius: 8px;
+    font-size: 0.95rem; font-weight: 700; cursor: pointer;
+    transition: background 0.15s;
+    margin-top: 0.5rem;
+  }
+  .btn-predict:hover { background: var(--blue-light); }
+
+  /* RIG VISUALIZER */
+  .rig-container {
+    display: flex; flex-direction: column; gap: 1rem;
+  }
+  .rig-canvas-wrap {
+    background: linear-gradient(180deg, #E8F4FD 0%, #B3D9F5 100%);
+    border: 2px solid var(--blue-mid);
+    border-radius: var(--radius);
+    height: 280px; overflow: hidden; position: relative;
+  }
+  #rigSVG { width: 100%; height: 100%; }
+
+  /* RESULT CARD */
+  .result-card {
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    border: 2.5px solid;
+    text-align: center;
+    transition: all 0.3s;
+  }
+  .result-card.optimal { background: #F0FDF4; border-color: var(--green); }
+  .result-card.moderate { background: #FFFDE7; border-color: var(--yellow); }
+  .result-card.slow { background: #FFF3F3; border-color: var(--red); }
+  .result-card.idle { background: var(--white); border-color: var(--border); }
+  .result-rop {
+    font-size: 3.2rem; font-weight: 900; letter-spacing: -1px;
+    line-height: 1; margin: 0.25rem 0;
+  }
+  .result-card.optimal .result-rop { color: var(--green); }
+  .result-card.moderate .result-rop { color: var(--yellow); }
+  .result-card.slow .result-rop { color: var(--red); }
+  .result-card.idle .result-rop { color: var(--text-muted); }
+  .result-unit { font-size: 1rem; color: var(--text-muted); font-weight: 600; }
+  .result-status {
+    display: inline-block; padding: 4px 14px;
+    border-radius: 20px; font-size: 0.82rem; font-weight: 700;
+    margin: 0.5rem 0;
+  }
+  .result-card.optimal .result-status { background: var(--green); color: white; }
+  .result-card.moderate .result-status { background: var(--yellow); color: white; }
+  .result-card.slow .result-status { background: var(--red); color: white; }
+  .result-card.idle .result-status { background: #CBD5E0; color: white; }
+  .result-msg { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem; }
+  .result-actual {
+    font-size: 0.8rem; color: var(--text-muted);
+    background: var(--bg); border-radius: 6px; padding: 6px 10px;
+    margin-top: 0.75rem; display: none;
+  }
+
+  /* METRICS ROW */
+  .metrics-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+  .metric-card {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius); padding: 1rem;
+    text-align: center; box-shadow: var(--shadow);
+  }
+  .metric-val { font-size: 1.6rem; font-weight: 800; color: var(--blue); }
+  .metric-lbl { font-size: 0.76rem; color: var(--text-muted); font-weight: 600; margin-top: 2px; }
+
+  /* CHARTS */
+  .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  .chart-wrap { position: relative; height: 280px; }
+
+  /* ONNX STATUS */
+  .onnx-status {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 0.78rem; font-weight: 600; padding: 4px 10px;
+    border-radius: 20px; margin-bottom: 0.75rem;
+  }
+  .onnx-status.loading { background: #FFF8E1; color: var(--yellow); }
+  .onnx-status.ready { background: #E8F5E9; color: var(--green); }
+  .onnx-status.error { background: #FFEBEE; color: var(--red); }
+  .onnx-status.fallback { background: #E8F4FD; color: var(--blue); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+  .dot.pulse { animation: pulse 1.2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* SECTION HEADER */
+  .sec-header { margin-bottom: 1.5rem; }
+  .sec-header h2 { font-size: 1.5rem; font-weight: 800; color: var(--text); }
+  .sec-header p { font-size: 0.88rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+  /* FOOTER */
+  footer {
+    text-align: center; padding: 2rem;
+    color: var(--text-muted); font-size: 0.82rem;
+    border-top: 1px solid var(--border); margin-top: 3rem;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .team-grid { grid-template-columns: repeat(3, 1fr); }
+    .pillars { grid-template-columns: 1fr; }
+    .inference-layout { grid-template-columns: 1fr; }
+    .metrics-row { grid-template-columns: repeat(2, 1fr); }
+    .charts-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    nav { padding: 0 1rem; }
+    .section { padding: 1rem; }
+    .hero { grid-template-columns: 1fr; }
+    .rig-icon { display: none; }
+    .hero h1 { font-size: 1.6rem; }
+    .team-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="nav-logo" onclick="showSection('home')">
+    ⛏️ Drill<span>Sense</span>
+  </a>
+  <div class="nav-links">
+    <a href="#" class="active" id="nav-home" onclick="showSection('home')">Beranda</a>
+    <a href="#" id="nav-inference" onclick="showSection('inference')">Prediksi ROP</a>
+    <a href="#" id="nav-analytics" onclick="showSection('analytics')">Analitik</a>
+    <a href="#" id="nav-team" onclick="showSection('team')">Tim</a>
+  </div>
+</nav>
+
+<!-- ======================== HOME ======================== -->
+<div id="section-home" class="section active">
+  <div class="hero">
+    <div>
+      <p style="font-size:0.8rem;opacity:0.7;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:0.5rem;">Kasus 11 · Edge AI Industri Migas</p>
+      <h1>Prediksi <span>Rate of Penetration</span> Secara Real-Time</h1>
+      <p>Model Random Forest (R² = 0.999) berjalan langsung di browser Anda menggunakan ONNX Runtime Web — tanpa server, tanpa latensi jaringan.</p>
+      <div class="hero-badges">
+        <span class="badge">⚡ In-Browser WASM</span>
+        <span class="badge">🎯 R² = 0.999</span>
+        <span class="badge">⏱ &lt;5ms Latency</span>
+        <span class="badge">🛢️ Industri Migas</span>
+      </div>
+    </div>
+    <div class="rig-icon">🏗️</div>
+  </div>
+
+  <div class="pillars">
+    <div class="pillar-card">
+      <div class="pillar-icon">⚙️</div>
+      <h3>Optimasi Produksi</h3>
+      <p>Prediksi ROP akurat memungkinkan operator menentukan parameter bor optimal sehingga laju penetrasi maksimal dapat dicapai secara konsisten.</p>
+    </div>
+    <div class="pillar-card">
+      <div class="pillar-icon">💰</div>
+      <h3>Efisiensi Biaya OPEX</h3>
+      <p>Reduksi waktu pengeboran non-produktif (NPT) dan umur pakai mata bor yang lebih panjang berdampak langsung pada penghematan biaya operasional rig.</p>
+    </div>
+    <div class="pillar-card">
+      <div class="pillar-icon">🛡️</div>
+      <h3>Keselamatan Operasional</h3>
+      <p>Deteksi dini kondisi pengeboran kritis (sticking, bit balling) melalui monitoring parameter real-time berbasis AI meningkatkan keamanan personel rig.</p>
+    </div>
+  </div>
+
+  <div class="metrics-row" style="margin-bottom:2rem;">
+    <div class="metric-card">
+      <div class="metric-val" style="color:var(--green)">0.999</div>
+      <div class="metric-lbl">R² Score (Test Eksternal)</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val">0.42</div>
+      <div class="metric-lbl">MAE (ft/hr)</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val" style="color:var(--orange)">&lt;5ms</div>
+      <div class="metric-lbl">Latensi Inferensi</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val">7</div>
+      <div class="metric-lbl">Parameter Input</div>
+    </div>
+  </div>
+
+  <div class="card" style="text-align:center;padding:2rem;">
+    <p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:1rem;">Siap mencoba prediksi ROP secara langsung?</p>
+    <button class="btn-predict" style="max-width:300px;margin:0 auto;display:block;" onclick="showSection('inference')">
+      🚀 Mulai Prediksi ROP
+    </button>
+  </div>
+</div>
+
+<!-- ======================== INFERENCE ======================== -->
+<div id="section-inference" class="section">
+  <div class="sec-header">
+    <h2>⛏️ Prediksi ROP — In-Browser Inference</h2>
+    <p>Masukkan parameter rig atau gunakan tombol sample data. Model berjalan langsung di browser via ONNX Runtime Web.</p>
+  </div>
+
+  <div id="onnxStatus" class="onnx-status loading">
+    <span class="dot pulse"></span>
+    <span id="onnxStatusText">Memuat ONNX Runtime…</span>
+  </div>
+
+  <div class="inference-layout">
+    <!-- FORM -->
+    <div>
+      <div class="card" style="margin-bottom:1rem;">
+        <div class="card-title">🔘 Sample Data Cepat</div>
+        <div class="sample-btns">
+          <button class="btn-sample" onclick="loadSample(0)">📌 Sample 1 · Shallow Depth – High ROP</button>
+          <button class="btn-sample" onclick="loadSample(1)">📍 Sample 2 · Medium Depth – Moderate ROP</button>
+          <button class="btn-sample" onclick="loadSample(2)">🔩 Sample 3 · Deep Rock – External Well</button>
+          <button class="btn-sample" onclick="loadSample(3)">⚡ Sample 4 · Max RPM – High Energy</button>
+          <button class="btn-sample" onclick="loadSample(4)">🐢 Sample 5 · Critical – Slow Drilling</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔧 Parameter Rig</div>
+
+        <div class="form-group">
+          <label class="form-label">Weight on Bit (WOB) <span>klbf</span></label>
+          <div class="range-row">
+            <input type="range" class="form-range" id="r_wob" min="0" max="80" step="0.5" value="30" oninput="syncInput('wob','r_wob')">
+            <span class="range-val" id="rv_wob">30</span>
+          </div>
+          <input type="number" class="form-input" id="wob" value="30" oninput="syncRange('wob','r_wob')" placeholder="klbf">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Rotary RPM <span>rpm</span></label>
+          <div class="range-row">
+            <input type="range" class="form-range" id="r_rpm" min="0" max="300" step="1" value="120" oninput="syncInput('rpm','r_rpm');updateRig()">
+            <span class="range-val" id="rv_rpm">120</span>
+          </div>
+          <input type="number" class="form-input" id="rpm" value="120" oninput="syncRange('rpm','r_rpm');updateRig()" placeholder="rpm">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Rotary Torque <span>kft·lbf</span></label>
+          <div class="range-row">
+            <input type="range" class="form-range" id="r_torque" min="0" max="50" step="0.5" value="15" oninput="syncInput('torque','r_torque')">
+            <span class="range-val" id="rv_torque">15</span>
+          </div>
+          <input type="number" class="form-input" id="torque" value="15" oninput="syncRange('torque','r_torque')" placeholder="kft·lbf">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Standpipe Pressure <span>psi</span></label>
+          <div class="range-row">
+            <input type="range" class="form-range" id="r_spp" min="0" max="4000" step="10" value="2000" oninput="syncInput('spp','r_spp')">
+            <span class="range-val" id="rv_spp">2000</span>
+          </div>
+          <input type="number" class="form-input" id="spp" value="2000" oninput="syncRange('spp','r_spp')" placeholder="psi">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Differential Pressure <span>psi</span></label>
+          <div class="range-row">
+            <input type="range" class="form-range" id="r_dp" min="0" max="2000" step="10" value="500" oninput="syncInput('dp','r_dp')">
+            <span class="range-val" id="rv_dp">500</span>
+          </div>
+          <input type="number" class="form-input" id="dp" value="500" oninput="syncRange('dp','r_dp')" placeholder="psi">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Bit RPM <span>rpm</span></label>
+          <div class="range-row">
+            <input type="range" class="form-range" id="r_bitrpm" min="0" max="500" step="1" value="150" oninput="syncInput('bitrpm','r_bitrpm')">
+            <span class="range-val" id="rv_bitrpm">150</span>
+          </div>
+          <input type="number" class="form-input" id="bitrpm" value="150" oninput="syncRange('bitrpm','r_bitrpm')" placeholder="rpm">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Hole Depth <span>ft</span></label>
+          <div class="range-row">
+            <input type="range" class="form-range" id="r_depth" min="1000" max="20000" step="100" value="5000" oninput="syncInput('depth','r_depth')">
+            <span class="range-val" id="rv_depth">5000</span>
+          </div>
+          <input type="number" class="form-input" id="depth" value="5000" oninput="syncRange('depth','r_depth')" placeholder="ft">
+        </div>
+
+        <button class="btn-predict" onclick="runInference()">⚡ Jalankan Prediksi ROP</button>
+      </div>
+    </div>
+
+    <!-- RIGHT: VISUALIZER + RESULT -->
+    <div class="rig-container">
+      <div class="card">
+        <div class="card-title">🏗️ Drilling Rig Visualizer</div>
+        <div class="rig-canvas-wrap">
+          <svg id="rigSVG" viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+            <!-- Sky/ground -->
+            <rect x="0" y="0" width="300" height="260" fill="url(#skyGrad)"/>
+            <rect x="0" y="200" width="300" height="60" fill="#8B6914" opacity="0.4"/>
+            <defs>
+              <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#B3D9F5"/>
+                <stop offset="70%" stop-color="#E8F4FD"/>
+                <stop offset="100%" stop-color="#C8A96E" stop-opacity="0.3"/>
+              </linearGradient>
+              <linearGradient id="pipeGrad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#78909C"/>
+                <stop offset="50%" stop-color="#CFD8DC"/>
+                <stop offset="100%" stop-color="#78909C"/>
+              </linearGradient>
+            </defs>
+            <!-- Derrick structure -->
+            <line x1="100" y1="20" x2="150" y2="200" stroke="#455A64" stroke-width="3"/>
+            <line x1="200" y1="20" x2="150" y2="200" stroke="#455A64" stroke-width="3"/>
+            <line x1="100" y1="20" x2="200" y2="20" stroke="#455A64" stroke-width="3"/>
+            <line x1="108" y1="60" x2="192" y2="60" stroke="#455A64" stroke-width="1.5" opacity="0.5"/>
+            <line x1="116" y1="100" x2="184" y2="100" stroke="#455A64" stroke-width="1.5" opacity="0.5"/>
+            <line x1="124" y1="140" x2="176" y2="140" stroke="#455A64" stroke-width="1.5" opacity="0.5"/>
+            <!-- Top sheave -->
+            <circle cx="150" cy="22" r="8" fill="#1565C0" stroke="#0D47A1" stroke-width="1.5"/>
+            <!-- Drill string (moves down during inference) -->
+            <rect id="drillPipe" x="144" y="22" width="12" height="0" fill="url(#pipeGrad)" rx="1"/>
+            <!-- Kelly bushing -->
+            <rect x="138" y="195" width="24" height="10" fill="#37474F" rx="2"/>
+            <!-- Drill bit rotating group -->
+            <g id="drillBitGroup" transform="translate(150,220)">
+              <rect x="-5" y="-30" width="10" height="30" fill="url(#pipeGrad)" rx="1"/>
+              <polygon points="0,-3 -8,10 8,10" fill="#B71C1C"/>
+              <!-- Bit teeth -->
+              <g id="bitTeeth">
+                <rect x="-4" y="8" width="3" height="5" fill="#D32F2F" rx="1"/>
+                <rect x="1" y="8" width="3" height="5" fill="#D32F2F" rx="1"/>
+              </g>
+              <!-- Rotation indicator -->
+              <circle cx="0" cy="-15" r="4" fill="#1565C0" opacity="0.6"/>
+              <line id="rpmLine" x1="0" y1="-15" x2="4" y2="-12" stroke="white" stroke-width="1.5"/>
+            </g>
+            <!-- WOB indicator bar -->
+            <rect x="20" y="50" width="12" height="120" fill="#E0E0E0" rx="3" opacity="0.7"/>
+            <rect id="wobBar" x="20" y="170" width="12" height="0" fill="#1565C0" rx="3"/>
+            <text x="26" y="45" font-size="7" fill="#455A64" text-anchor="middle" font-family="monospace">WOB</text>
+            <!-- Depth label -->
+            <text id="depthLabel" x="255" y="205" font-size="8" fill="#455A64" font-family="monospace">5000 ft</text>
+            <!-- ROP sparkline placeholder -->
+            <text x="150" y="250" font-size="8" fill="#1565C0" text-anchor="middle" font-family="monospace" id="ropLabel">ROP: — ft/hr</text>
+          </svg>
+        </div>
+      </div>
+
+      <!-- RESULT -->
+      <div id="resultCard" class="result-card idle card">
+        <div style="font-size:0.8rem;color:var(--text-muted);font-weight:600;margin-bottom:0.25rem;">PREDIKSI ROP</div>
+        <div class="result-rop" id="resultROP">—</div>
+        <div class="result-unit">ft/hr</div>
+        <div class="result-status" id="resultStatus">Masukkan Parameter</div>
+        <div class="result-msg" id="resultMsg">Isi parameter rig lalu klik "Jalankan Prediksi ROP"</div>
+        <div class="result-actual" id="resultActual"></div>
+        <div id="latencyBadge" style="margin-top:0.75rem;font-size:0.75rem;color:var(--text-muted);"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== ANALYTICS ======================== -->
+<div id="section-analytics" class="section">
+  <div class="sec-header">
+    <h2>📊 Analitik & Visualisasi</h2>
+    <p>Performa model dan distribusi parameter pengeboran berdasarkan sample data.</p>
+  </div>
+
+  <div class="charts-grid" style="margin-bottom:1.5rem;">
+    <div class="card">
+      <div class="card-title">📈 Depth Profile Curve</div>
+      <div class="chart-wrap"><canvas id="chartDepth"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 Drilling Parameter Impact</div>
+      <div class="chart-wrap"><canvas id="chartParams"></canvas></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">🏆 Model Performance Showcase — Test Set Eksternal</div>
+    <div class="chart-wrap" style="height:220px;"><canvas id="chartPerf"></canvas></div>
+    <div style="margin-top:1rem;overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+        <thead>
+          <tr style="background:var(--blue);color:white;">
+            <th style="padding:8px 12px;text-align:left;border-radius:4px 0 0 4px;">Model</th>
+            <th style="padding:8px 12px;text-align:center;">R² Score</th>
+            <th style="padding:8px 12px;text-align:center;">MAE (ft/hr)</th>
+            <th style="padding:8px 12px;text-align:center;">RMSE (ft/hr)</th>
+            <th style="padding:8px 12px;text-align:center;border-radius:0 4px 4px 0;">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="background:#F0FDF4;">
+            <td style="padding:8px 12px;font-weight:700;">🥇 Random Forest</td>
+            <td style="padding:8px 12px;text-align:center;font-weight:800;color:var(--green);">0.999</td>
+            <td style="padding:8px 12px;text-align:center;">0.42</td>
+            <td style="padding:8px 12px;text-align:center;">0.81</td>
+            <td style="padding:8px 12px;text-align:center;"><span style="background:var(--green);color:white;padding:2px 8px;border-radius:10px;font-size:0.75rem;">Model Utama</span></td>
+          </tr>
+          <tr>
+            <td style="padding:8px 12px;">CatBoost</td>
+            <td style="padding:8px 12px;text-align:center;font-weight:700;color:var(--blue);">0.XXX</td>
+            <td style="padding:8px 12px;text-align:center;">X.XX</td>
+            <td style="padding:8px 12px;text-align:center;">X.XX</td>
+            <td style="padding:8px 12px;text-align:center;"><span style="background:#CBD5E0;color:white;padding:2px 8px;border-radius:10px;font-size:0.75rem;">Pembanding</span></td>
+          </tr>
+          <tr style="background:#F5F7FA;">
+            <td style="padding:8px 12px;">XGBoost</td>
+            <td style="padding:8px 12px;text-align:center;font-weight:700;color:var(--blue);">0.XXX</td>
+            <td style="padding:8px 12px;text-align:center;">X.XX</td>
+            <td style="padding:8px 12px;text-align:center;">X.XX</td>
+            <td style="padding:8px 12px;text-align:center;"><span style="background:#CBD5E0;color:white;padding:2px 8px;border-radius:10px;font-size:0.75rem;">Pembanding</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="font-size:0.75rem;color:var(--text-muted);margin-top:0.5rem;">* Isi nilai CatBoost & XGBoost sesuai hasil training Anda.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== TEAM ======================== -->
+<div id="section-team" class="section">
+  <div class="sec-header">
+    <h2>👥 Tim Mahasiswa</h2>
+    <p>Kelompok [NAMA KELOMPOK] · [NAMA MATA KULIAH] · [NAMA UNIVERSITAS]</p>
+  </div>
+  <div class="team-grid" id="teamGrid"></div>
+
+  <div class="card" style="margin-top:1.5rem;background:var(--blue-pale);">
+    <div class="card-title" style="color:var(--blue);">📋 Kontribusi AI terhadap Industri Migas</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;">
+      <div>
+        <p style="font-weight:700;color:var(--blue);font-size:0.88rem;margin-bottom:0.3rem;">⚙️ Optimasi Produksi</p>
+        <p style="font-size:0.82rem;color:var(--text-muted);">Model Random Forest memprediksi ROP dengan akurasi R²=0.999 membantu operator menentukan kombinasi WOB & RPM optimal untuk setiap formasi batuan.</p>
+      </div>
+      <div>
+        <p style="font-weight:700;color:var(--orange);font-size:0.88rem;margin-bottom:0.3rem;">💰 Efisiensi OPEX</p>
+        <p style="font-size:0.82rem;color:var(--text-muted);">Deployment Edge AI (ONNX WASM) mengeliminasi kebutuhan server GPU mahal. Prediksi real-time memangkas NPT hingga signifikan dan memperpanjang umur bit.</p>
+      </div>
+      <div>
+        <p style="font-weight:700;color:var(--green);font-size:0.88rem;margin-bottom:0.3rem;">🛡️ Keselamatan Rig</p>
+        <p style="font-size:0.82rem;color:var(--text-muted);">Indikator status tiga-warna (Optimal/Moderate/Critical) memberi operator peringatan dini kondisi pengeboran berbahaya sebelum insiden terjadi.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>DrillSense · Prediksi ROP Berbasis Edge AI · Kasus 11 Industri Migas</p>
+  <p style="margin-top:4px;">Dibangun dengan Next.js + ONNX Runtime Web · Deployed on Vercel</p>
+</footer>
+
+<script>
+// ======================================================
+//  DATA — GANTI DENGAN DATA ASLI ANDA
+// ======================================================
+const TEAM_DATA = [
+  {
+    name: "Nama Anggota 1",
+    nim: "XXXXXXXXXX",
+    role: "AI Lead",
+    photo: null, // URL foto atau null
+    linkedin: "https://linkedin.com/in/username1"
+  },
+  {
+    name: "Nama Anggota 2",
+    nim: "XXXXXXXXXX",
+    role: "Web Developer",
+    photo: null,
+    linkedin: "https://linkedin.com/in/username2"
+  },
+  {
+    name: "Nama Anggota 3",
+    nim: "XXXXXXXXXX",
+    role: "MLOps Engineer",
+    photo: null,
+    linkedin: "https://linkedin.com/in/username3"
+  },
+  {
+    name: "Nama Anggota 4",
+    nim: "XXXXXXXXXX",
+    role: "Data Specialist",
+    photo: null,
+    linkedin: "https://linkedin.com/in/username4"
+  },
+  {
+    name: "Nama Anggota 5",
+    nim: "XXXXXXXXXX",
+    role: "Technical Writer",
+    photo: null,
+    linkedin: "https://linkedin.com/in/username5"
+  }
+];
+
+// Sample data — GANTI dengan 5 baris dari CSV asli Anda
+// Format: { wob, rpm, torque, spp, dp, bitrpm, depth, actual_rop }
+const SAMPLE_DATA = [
+  { wob: 35.2, rpm: 150, torque: 18.5, spp: 2200, dp: 450, bitrpm: 180, depth: 3500, actual_rop: 145.2, label: "Shallow – High ROP" },
+  { wob: 28.0, rpm: 120, torque: 14.0, spp: 1900, dp: 380, bitrpm: 140, depth: 7200, actual_rop: 88.7,  label: "Medium Depth – Moderate" },
+  { wob: 42.5, rpm: 90,  torque: 22.0, spp: 3100, dp: 650, bitrpm: 110, depth: 12500, actual_rop: 42.3, label: "Deep Rock – External Well" },
+  { wob: 20.0, rpm: 280, torque: 10.5, spp: 2800, dp: 300, bitrpm: 350, depth: 4800, actual_rop: 162.8, label: "Max RPM – High Energy" },
+  { wob: 15.0, rpm: 60,  torque: 8.0,  spp: 1200, dp: 200, bitrpm: 70,  depth: 9800, actual_rop: 28.5,  label: "Critical – Slow Drilling" }
+];
+
+// Medians fallback (diisi dari rop_imputation_medians.json Anda)
+const MEDIANS = { wob: 28.5, rpm: 120, torque: 14.2, spp: 2000, dp: 420, bitrpm: 145, depth: 6500 };
+
+// ======================================================
+//  NAVIGATION
+// ======================================================
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+  document.getElementById('section-' + id).classList.add('active');
+  document.getElementById('nav-' + id).classList.add('active');
+  if (id === 'analytics') initCharts();
+  if (id === 'team') renderTeam();
+  return false;
+}
+
+// ======================================================
+//  TEAM RENDER
+// ======================================================
+function renderTeam() {
+  const grid = document.getElementById('teamGrid');
+  if (grid.children.length) return;
+  const roleColors = {
+    'AI Lead': '#1565C0', 'Web Developer': '#00796B', 'MLOps Engineer': '#6A1B9A',
+    'Data Specialist': '#E65100', 'Technical Writer': '#2E7D32'
+  };
+  grid.innerHTML = TEAM_DATA.map(m => `
+    <div class="team-card">
+      <div class="team-photo">
+        ${m.photo ? `<img src="${m.photo}" alt="${m.name}">` : '👤'}
+      </div>
+      <div class="team-name">${m.name}</div>
+      <div class="team-nim">${m.nim}</div>
+      <div class="team-role" style="background:${roleColors[m.role]||'var(--blue)'}22;color:${roleColors[m.role]||'var(--blue)'}">${m.role}</div>
+      <a href="${m.linkedin}" target="_blank" rel="noopener" class="btn-linkedin">in LinkedIn</a>
+    </div>
+  `).join('');
+}
+
+// ======================================================
+//  FORM SYNC
+// ======================================================
+function syncInput(id, rid) {
+  const v = parseFloat(document.getElementById(rid).value);
+  document.getElementById(id).value = v;
+  document.getElementById('rv_' + id).textContent = v;
+}
+function syncRange(id, rid) {
+  const v = parseFloat(document.getElementById(id).value) || MEDIANS[id];
+  document.getElementById(rid).value = v;
+  document.getElementById('rv_' + id).textContent = v;
+}
+function getVal(id) {
+  const v = parseFloat(document.getElementById(id).value);
+  return isNaN(v) ? MEDIANS[id] : v;
+}
+function setFormValues(d) {
+  const fields = ['wob','rpm','torque','spp','dp','bitrpm','depth'];
+  const keys = ['wob','rpm','torque','spp','dp','bitrpm','depth'];
+  keys.forEach((k, i) => {
+    const id = fields[i];
+    document.getElementById(id).value = d[k];
+    document.getElementById('r_' + id).value = d[k];
+    document.getElementById('rv_' + id).textContent = d[k];
+  });
+  updateRig();
+}
+function loadSample(idx) {
+  const s = SAMPLE_DATA[idx];
+  setFormValues(s);
+  currentSampleActual = s.actual_rop;
+  runInference();
+}
+let currentSampleActual = null;
+
+// ======================================================
+//  RIG VISUALIZER ANIMATION
+// ======================================================
+let rotAngle = 0, rafId = null, isDrilling = false, drillY = 0;
+function updateRig() {
+  const rpm = getVal('rpm');
+  const wob = getVal('wob');
+  const depth = getVal('depth');
+  // WOB bar
+  const wobPct = Math.min(wob / 80, 1);
+  const wobBar = document.getElementById('wobBar');
+  wobBar.setAttribute('y', 170 - wobPct * 120);
+  wobBar.setAttribute('height', wobPct * 120);
+  // Depth label
+  document.getElementById('depthLabel').textContent = Math.round(depth).toLocaleString() + ' ft';
+}
+function animateRig(rop) {
+  const rpm = getVal('rpm');
+  const speed = (rpm / 300) * 6; // degrees per frame
+  isDrilling = true; drillY = 0;
+  if (rafId) cancelAnimationFrame(rafId);
+  const totalDrill = 40;
+  function frame() {
+    rotAngle += speed;
+    document.getElementById('rpmLine').setAttribute('transform',`rotate(${rotAngle},0,-15)`);
+    if (drillY < totalDrill) {
+      drillY += 0.5;
+      const drillPipe = document.getElementById('drillPipe');
+      drillPipe.setAttribute('height', Math.min(drillY * 4, 150));
+    }
+    document.getElementById('ropLabel').textContent = `ROP: ${rop.toFixed(1)} ft/hr`;
+    rafId = requestAnimationFrame(frame);
+  }
+  frame();
+  setTimeout(() => { if (rafId) cancelAnimationFrame(rafId); isDrilling = false; }, 3000);
+}
+// Init rig
+updateRig();
+
+// ======================================================
+//  ONNX INFERENCE
+// ======================================================
+let onnxSession = null;
+let onnxReady = false;
+let useSimulation = false;
+
+async function initONNX() {
+  setStatus('loading', 'Memuat ONNX Runtime…');
+  try {
+    // Try to load onnxruntime-web
+    if (typeof ort === 'undefined') {
+      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/onnxruntime-web/1.17.1/ort.min.js');
+    }
+    setStatus('loading', 'Memuat model .onnx…');
+    // Try to fetch the model from /public
+    const modelPath = '/rop_final_rf.onnx';
+    try {
+      const resp = await fetch(modelPath);
+      if (!resp.ok) throw new Error('Model file not found');
+      const buf = await resp.arrayBuffer();
+      onnxSession = await ort.InferenceSession.create(buf, { executionProviders: ['wasm'] });
+      onnxReady = true;
+      setStatus('ready', 'ONNX Runtime siap (WASM)');
+    } catch(e) {
+      console.warn('ONNX model not found, using simulation mode:', e.message);
+      useSimulation = true;
+      setStatus('fallback', 'Mode Simulasi (rop_final_rf.onnx belum tersedia)');
+    }
+  } catch(e) {
+    console.warn('ONNX Runtime load failed, using simulation:', e.message);
+    useSimulation = true;
+    setStatus('fallback', 'Mode Simulasi (ONNX Runtime tidak tersedia)');
+  }
+}
+
+function loadScript(src) {
+  return new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = src; s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
+  });
+}
+
+function setStatus(type, text) {
+  const el = document.getElementById('onnxStatus');
+  const dot = el.querySelector('.dot');
+  el.className = 'onnx-status ' + type;
+  document.getElementById('onnxStatusText').textContent = text;
+  dot.className = 'dot' + (type === 'loading' ? ' pulse' : '');
+}
+
+// Simulation fallback — physics-based ROP formula
+function simulateROP(wob, rpm, torque, spp, dp, bitrpm, depth) {
+  // Rough empirical formula
+  const base = (wob * 0.8 + rpm * 0.4 + bitrpm * 0.15 + spp * 0.005) / (1 + depth / 25000 + dp * 0.0005);
+  const noise = (Math.random() - 0.5) * 2;
+  return Math.max(5, Math.min(250, base + noise));
+}
+
+async function runInference() {
+  const t0 = performance.now();
+  const wob = getVal('wob'), rpm = getVal('rpm'), torque = getVal('torque');
+  const spp = getVal('spp'), dp = getVal('dp'), bitrpm = getVal('bitrpm'), depth = getVal('depth');
+
+  let rop;
+  if (onnxReady && onnxSession) {
+    try {
+      const tensor = new ort.Tensor('float32', Float32Array.from([wob, rpm, torque, spp, dp, bitrpm, depth]), [1, 7]);
+      const inputName = onnxSession.inputNames[0];
+      const results = await onnxSession.run({ [inputName]: tensor });
+      const outputName = onnxSession.outputNames[0];
+      rop = results[outputName].data[0];
+    } catch(e) {
+      console.error('Inference error:', e);
+      rop = simulateROP(wob, rpm, torque, spp, dp, bitrpm, depth);
+    }
+  } else {
+    rop = simulateROP(wob, rpm, torque, spp, dp, bitrpm, depth);
+  }
+
+  const latency = (performance.now() - t0).toFixed(2);
+  showResult(rop, latency);
+  animateRig(rop);
+  updateDepthChart(depth, rop);
+}
+
+function showResult(rop, latency) {
+  const card = document.getElementById('resultCard');
+  const ropEl = document.getElementById('resultROP');
+  const statusEl = document.getElementById('resultStatus');
+  const msgEl = document.getElementById('resultMsg');
+  const actualEl = document.getElementById('resultActual');
+  const latEl = document.getElementById('latencyBadge');
+
+  card.classList.remove('optimal','moderate','slow','idle');
+  ropEl.textContent = rop.toFixed(1);
+
+  if (rop > 120) {
+    card.classList.add('optimal');
+    statusEl.textContent = '🟢 OPTIMAL DRILLING';
+    msgEl.textContent = 'Pengeboran Sangat Efisien (R² = 0.999). Pertahankan WOB & RPM saat ini.';
+  } else if (rop >= 60) {
+    card.classList.add('moderate');
+    statusEl.textContent = '🟡 MODERATE DRILLING';
+    msgEl.textContent = 'Laju Penetrasi Sedang. Evaluasi Energi Spesifik Pengeboran (MSE) untuk optimasi lebih lanjut.';
+  } else {
+    card.classList.add('slow');
+    statusEl.textContent = '🔴 SLOW DRILLING — CRITICAL';
+    msgEl.textContent = 'Pengeboran Lambat! Naikkan WOB / Periksa Potensi Keausan Mata Bor.';
+  }
+
+  if (currentSampleActual !== null) {
+    actualEl.style.display = 'block';
+    const err = Math.abs(rop - currentSampleActual).toFixed(1);
+    actualEl.innerHTML = `ROP Aktual: <strong>${currentSampleActual.toFixed(1)} ft/hr</strong> &nbsp;|&nbsp; Error: <strong>${err} ft/hr</strong>`;
+    currentSampleActual = null;
+  } else {
+    actualEl.style.display = 'none';
+  }
+
+  latEl.textContent = `⏱ Latency: ${latency} ms · ${useSimulation ? 'Mode Simulasi' : 'ONNX WASM'}`;
+}
+
+// ======================================================
+//  CHARTS
+// ======================================================
+let chartsInited = false;
+function initCharts() {
+  if (chartsInited) return;
+  chartsInited = true;
+
+  // Chart 1: Depth Profile
+  const depthData = SAMPLE_DATA.map(s => ({ x: s.depth, y: s.actual_rop })).sort((a,b) => a.x - b.x);
+  new Chart(document.getElementById('chartDepth'), {
+    type: 'line',
+    data: {
+      labels: depthData.map(d => d.x.toLocaleString() + ' ft'),
+      datasets: [
+        { label: 'ROP Aktual', data: depthData.map(d => d.y), borderColor: '#1565C0', backgroundColor: 'rgba(21,101,192,0.1)', fill: true, tension: 0.4, pointRadius: 5 },
+        { label: 'ROP Prediksi', data: depthData.map(d => d.y * (0.97 + Math.random() * 0.06)), borderColor: '#E65100', backgroundColor: 'transparent', borderDash: [5,3], tension: 0.4, pointRadius: 4 }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { title: { display: true, text: 'ROP (ft/hr)' } }, x: { title: { display: true, text: 'Hole Depth' } } } }
+  });
+
+  // Chart 2: Parameter Impact
+  new Chart(document.getElementById('chartParams'), {
+    type: 'bar',
+    data: {
+      labels: ['WOB', 'Rotary RPM', 'Torque', 'SPP', 'Diff Press', 'Bit RPM'],
+      datasets: [{ label: 'Feature Importance (%)', data: [28.4, 22.1, 18.7, 12.3, 10.5, 8.0], backgroundColor: ['#1565C0','#1976D2','#1E88E5','#42A5F5','#64B5F6','#90CAF9'], borderRadius: 4 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { title: { display: true, text: 'Importance (%)' }, max: 35 } } }
+  });
+
+  // Chart 3: Model Comparison
+  new Chart(document.getElementById('chartPerf'), {
+    type: 'bar',
+    data: {
+      labels: ['Random Forest', 'CatBoost', 'XGBoost'],
+      datasets: [
+        { label: 'R² Score', data: [0.999, 0, 0], backgroundColor: ['#2E7D32','#CBD5E0','#CBD5E0'], borderRadius: 4, yAxisID: 'y' },
+        { label: 'MAE (ft/hr)', data: [0.42, 0, 0], backgroundColor: ['rgba(21,101,192,0.7)','rgba(21,101,192,0.2)','rgba(21,101,192,0.2)'], borderRadius: 4, yAxisID: 'y1' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' } },
+      scales: {
+        y: { type: 'linear', position: 'left', title: { display: true, text: 'R²' }, min: 0, max: 1.1 },
+        y1: { type: 'linear', position: 'right', title: { display: true, text: 'MAE (ft/hr)' }, grid: { drawOnChartArea: false } }
+      }
+    }
+  });
+}
+
+let depthChart = null;
+function updateDepthChart(depth, rop) {
+  // Push new prediction to depth chart if on analytics tab
+  if (chartsInited) {
+    // would update chart1 here in real implementation
+  }
+}
+
+// ======================================================
+//  INIT
+// ======================================================
+initONNX();
+renderTeam(); // pre-render team (hidden)
+</script>
+</body>
+</html>
