@@ -92,10 +92,7 @@
     border: 1px solid rgba(255,255,255,0.3);
     color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 600;
   }
-  .rig-icon {
-    font-size: 5rem; opacity: 0.25;
-    user-select: none;
-  }
+  .rig-icon { font-size: 5rem; opacity: 0.25; user-select: none; }
 
   /* PILLARS */
   .pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
@@ -222,9 +219,7 @@
   .btn-predict:hover { background: var(--blue-light); }
 
   /* RIG VISUALIZER */
-  .rig-container {
-    display: flex; flex-direction: column; gap: 1rem;
-  }
+  .rig-container { display: flex; flex-direction: column; gap: 1rem; }
   .rig-canvas-wrap {
     background: linear-gradient(180deg, #E8F4FD 0%, #B3D9F5 100%);
     border: 2px solid var(--blue-mid);
@@ -349,10 +344,10 @@
     <div>
       <p style="font-size:0.8rem;opacity:0.7;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:0.5rem;">Kasus 11 · Edge AI Industri Migas</p>
       <h1>Prediksi <span>Rate of Penetration</span> Secara Real-Time</h1>
-      <p>Model Random Forest (R² = 0.999) berjalan langsung di browser Anda menggunakan ONNX Runtime Web — tanpa server, tanpa latensi jaringan.</p>
+      <p>Model Random Forest (R² = 0.9993) berjalan langsung di browser Anda menggunakan ONNX Runtime Web — tanpa server, tanpa latensi jaringan.</p>
       <div class="hero-badges">
         <span class="badge">⚡ In-Browser WASM</span>
-        <span class="badge">🎯 R² = 0.999</span>
+        <span class="badge">🎯 R² = 0.9993</span>
         <span class="badge">⏱ &lt;5ms Latency</span>
         <span class="badge">🛢️ Industri Migas</span>
       </div>
@@ -380,11 +375,11 @@
 
   <div class="metrics-row" style="margin-bottom:2rem;">
     <div class="metric-card">
-      <div class="metric-val" style="color:var(--green)">0.999</div>
-      <div class="metric-lbl">R² Score (Test Eksternal)</div>
+      <div class="metric-val" style="color:var(--green)">0.9993</div>
+      <div class="metric-lbl">R² Score (Test Eksternal CSV 1)</div>
     </div>
     <div class="metric-card">
-      <div class="metric-val">0.42</div>
+      <div class="metric-val">1.057</div>
       <div class="metric-lbl">MAE (ft/hr)</div>
     </div>
     <div class="metric-card">
@@ -392,8 +387,8 @@
       <div class="metric-lbl">Latensi Inferensi</div>
     </div>
     <div class="metric-card">
-      <div class="metric-val">7</div>
-      <div class="metric-lbl">Parameter Input</div>
+      <div class="metric-val" id="numFeaturesBadge">7</div>
+      <div class="metric-lbl">Parameter Input Fitur</div>
     </div>
   </div>
 
@@ -421,8 +416,8 @@
     <!-- FORM -->
     <div>
       <div class="card" style="margin-bottom:1rem;">
-        <div class="card-title">🔘 Sample Data Cepat</div>
-        <div class="sample-btns">
+        <div class="card-title">🔘 Sample Data Cepat (CSV 1 External Test)</div>
+        <div class="sample-btns" id="sampleBtnsContainer">
           <button class="btn-sample" onclick="loadSample(0)">📌 Sample 1 · Shallow Depth – High ROP</button>
           <button class="btn-sample" onclick="loadSample(1)">📍 Sample 2 · Medium Depth – Moderate ROP</button>
           <button class="btn-sample" onclick="loadSample(2)">🔩 Sample 3 · Deep Rock – External Well</button>
@@ -507,7 +502,6 @@
         <div class="card-title">🏗️ Drilling Rig Visualizer</div>
         <div class="rig-canvas-wrap">
           <svg id="rigSVG" viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
-            <!-- Sky/ground -->
             <rect x="0" y="0" width="300" height="260" fill="url(#skyGrad)"/>
             <rect x="0" y="200" width="300" height="60" fill="#8B6914" opacity="0.4"/>
             <defs>
@@ -522,39 +516,29 @@
                 <stop offset="100%" stop-color="#78909C"/>
               </linearGradient>
             </defs>
-            <!-- Derrick structure -->
             <line x1="100" y1="20" x2="150" y2="200" stroke="#455A64" stroke-width="3"/>
             <line x1="200" y1="20" x2="150" y2="200" stroke="#455A64" stroke-width="3"/>
             <line x1="100" y1="20" x2="200" y2="20" stroke="#455A64" stroke-width="3"/>
             <line x1="108" y1="60" x2="192" y2="60" stroke="#455A64" stroke-width="1.5" opacity="0.5"/>
             <line x1="116" y1="100" x2="184" y2="100" stroke="#455A64" stroke-width="1.5" opacity="0.5"/>
             <line x1="124" y1="140" x2="176" y2="140" stroke="#455A64" stroke-width="1.5" opacity="0.5"/>
-            <!-- Top sheave -->
             <circle cx="150" cy="22" r="8" fill="#1565C0" stroke="#0D47A1" stroke-width="1.5"/>
-            <!-- Drill string (moves down during inference) -->
             <rect id="drillPipe" x="144" y="22" width="12" height="0" fill="url(#pipeGrad)" rx="1"/>
-            <!-- Kelly bushing -->
             <rect x="138" y="195" width="24" height="10" fill="#37474F" rx="2"/>
-            <!-- Drill bit rotating group -->
             <g id="drillBitGroup" transform="translate(150,220)">
               <rect x="-5" y="-30" width="10" height="30" fill="url(#pipeGrad)" rx="1"/>
               <polygon points="0,-3 -8,10 8,10" fill="#B71C1C"/>
-              <!-- Bit teeth -->
               <g id="bitTeeth">
                 <rect x="-4" y="8" width="3" height="5" fill="#D32F2F" rx="1"/>
                 <rect x="1" y="8" width="3" height="5" fill="#D32F2F" rx="1"/>
               </g>
-              <!-- Rotation indicator -->
               <circle cx="0" cy="-15" r="4" fill="#1565C0" opacity="0.6"/>
               <line id="rpmLine" x1="0" y1="-15" x2="4" y2="-12" stroke="white" stroke-width="1.5"/>
             </g>
-            <!-- WOB indicator bar -->
             <rect x="20" y="50" width="12" height="120" fill="#E0E0E0" rx="3" opacity="0.7"/>
             <rect id="wobBar" x="20" y="170" width="12" height="0" fill="#1565C0" rx="3"/>
             <text x="26" y="45" font-size="7" fill="#455A64" text-anchor="middle" font-family="monospace">WOB</text>
-            <!-- Depth label -->
             <text id="depthLabel" x="255" y="205" font-size="8" fill="#455A64" font-family="monospace">5000 ft</text>
-            <!-- ROP sparkline placeholder -->
             <text x="150" y="250" font-size="8" fill="#1565C0" text-anchor="middle" font-family="monospace" id="ropLabel">ROP: — ft/hr</text>
           </svg>
         </div>
@@ -578,7 +562,7 @@
 <div id="section-analytics" class="section">
   <div class="sec-header">
     <h2>📊 Analitik & Visualisasi</h2>
-    <p>Performa model dan distribusi parameter pengeboran berdasarkan sample data.</p>
+    <p>Performa model dan distribusi parameter pengeboran berdasarkan sample data CSV 1 & CSV 2.</p>
   </div>
 
   <div class="charts-grid" style="margin-bottom:1.5rem;">
@@ -587,49 +571,48 @@
       <div class="chart-wrap"><canvas id="chartDepth"></canvas></div>
     </div>
     <div class="card">
-      <div class="card-title">📊 Drilling Parameter Impact</div>
+      <div class="card-title">📊 Feature Importance (%)</div>
       <div class="chart-wrap"><canvas id="chartParams"></canvas></div>
     </div>
   </div>
   <div class="card">
-    <div class="card-title">🏆 Model Performance Showcase — Test Set Eksternal</div>
+    <div class="card-title">🏆 Model Performance Showcase — Validation CSV 2</div>
     <div class="chart-wrap" style="height:220px;"><canvas id="chartPerf"></canvas></div>
     <div style="margin-top:1rem;overflow-x:auto;">
       <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
         <thead>
           <tr style="background:var(--blue);color:white;">
             <th style="padding:8px 12px;text-align:left;border-radius:4px 0 0 4px;">Model</th>
-            <th style="padding:8px 12px;text-align:center;">R² Score</th>
             <th style="padding:8px 12px;text-align:center;">MAE (ft/hr)</th>
             <th style="padding:8px 12px;text-align:center;">RMSE (ft/hr)</th>
+            <th style="padding:8px 12px;text-align:center;">R² Score</th>
             <th style="padding:8px 12px;text-align:center;border-radius:0 4px 4px 0;">Status</th>
           </tr>
         </thead>
         <tbody>
           <tr style="background:#F0FDF4;">
             <td style="padding:8px 12px;font-weight:700;">🥇 Random Forest</td>
-            <td style="padding:8px 12px;text-align:center;font-weight:800;color:var(--green);">0.999</td>
-            <td style="padding:8px 12px;text-align:center;">0.42</td>
-            <td style="padding:8px 12px;text-align:center;">0.81</td>
-            <td style="padding:8px 12px;text-align:center;"><span style="background:var(--green);color:white;padding:2px 8px;border-radius:10px;font-size:0.75rem;">Model Utama</span></td>
+            <td style="padding:8px 12px;text-align:center;">1.8083</td>
+            <td style="padding:8px 12px;text-align:center;">2.4744</td>
+            <td style="padding:8px 12px;text-align:center;font-weight:800;color:var(--green);">0.9977</td>
+            <td style="padding:8px 12px;text-align:center;"><span style="background:var(--green);color:white;padding:2px 8px;border-radius:10px;font-size:0.75rem;">Terpilih Retrain</span></td>
           </tr>
           <tr>
             <td style="padding:8px 12px;">CatBoost</td>
-            <td style="padding:8px 12px;text-align:center;font-weight:700;color:var(--blue);">0.XXX</td>
-            <td style="padding:8px 12px;text-align:center;">X.XX</td>
-            <td style="padding:8px 12px;text-align:center;">X.XX</td>
+            <td style="padding:8px 12px;text-align:center;">3.2035</td>
+            <td style="padding:8px 12px;text-align:center;">4.3203</td>
+            <td style="padding:8px 12px;text-align:center;font-weight:700;color:var(--blue);">0.9931</td>
             <td style="padding:8px 12px;text-align:center;"><span style="background:#CBD5E0;color:white;padding:2px 8px;border-radius:10px;font-size:0.75rem;">Pembanding</span></td>
           </tr>
           <tr style="background:#F5F7FA;">
             <td style="padding:8px 12px;">XGBoost</td>
-            <td style="padding:8px 12px;text-align:center;font-weight:700;color:var(--blue);">0.XXX</td>
-            <td style="padding:8px 12px;text-align:center;">X.XX</td>
-            <td style="padding:8px 12px;text-align:center;">X.XX</td>
+            <td style="padding:8px 12px;text-align:center;">2.8696</td>
+            <td style="padding:8px 12px;text-align:center;">6.0084</td>
+            <td style="padding:8px 12px;text-align:center;font-weight:700;color:var(--blue);">0.9868</td>
             <td style="padding:8px 12px;text-align:center;"><span style="background:#CBD5E0;color:white;padding:2px 8px;border-radius:10px;font-size:0.75rem;">Pembanding</span></td>
           </tr>
         </tbody>
       </table>
-      <p style="font-size:0.75rem;color:var(--text-muted);margin-top:0.5rem;">* Isi nilai CatBoost & XGBoost sesuai hasil training Anda.</p>
     </div>
   </div>
 </div>
@@ -638,7 +621,7 @@
 <div id="section-team" class="section">
   <div class="sec-header">
     <h2>👥 Tim Mahasiswa</h2>
-    <p>Kelompok [NAMA KELOMPOK] · [NAMA MATA KULIAH] · [NAMA UNIVERSITAS]</p>
+    <p>Kelompok [NAMA KELOMPOK] · Sains Data UPN "Veteran" Jawa Timur</p>
   </div>
   <div class="team-grid" id="teamGrid"></div>
 
@@ -647,15 +630,15 @@
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;">
       <div>
         <p style="font-weight:700;color:var(--blue);font-size:0.88rem;margin-bottom:0.3rem;">⚙️ Optimasi Produksi</p>
-        <p style="font-size:0.82rem;color:var(--text-muted);">Model Random Forest memprediksi ROP dengan akurasi R²=0.999 membantu operator menentukan kombinasi WOB & RPM optimal untuk setiap formasi batuan.</p>
+        <p style="font-size:0.82rem;color:var(--text-muted);">Model Random Forest memprediksi ROP dengan R²=0.9993 pada External Test CSV 1 untuk membantu menentukan WOB & RPM optimal.</p>
       </div>
       <div>
         <p style="font-weight:700;color:var(--orange);font-size:0.88rem;margin-bottom:0.3rem;">💰 Efisiensi OPEX</p>
-        <p style="font-size:0.82rem;color:var(--text-muted);">Deployment Edge AI (ONNX WASM) mengeliminasi kebutuhan server GPU mahal. Prediksi real-time memangkas NPT hingga signifikan dan memperpanjang umur bit.</p>
+        <p style="font-size:0.82rem;color:var(--text-muted);">Deployment Edge AI (ONNX WASM) mengeliminasi server GPU. Prediksi real-time memangkas NPT dan memperpanjang umur bit.</p>
       </div>
       <div>
         <p style="font-weight:700;color:var(--green);font-size:0.88rem;margin-bottom:0.3rem;">🛡️ Keselamatan Rig</p>
-        <p style="font-size:0.82rem;color:var(--text-muted);">Indikator status tiga-warna (Optimal/Moderate/Critical) memberi operator peringatan dini kondisi pengeboran berbahaya sebelum insiden terjadi.</p>
+        <p style="font-size:0.82rem;color:var(--text-muted);">Indikator tiga-warna (Optimal/Moderate/Critical) memberi peringatan kondisi pengeboran berbahaya sebelum insiden terjadi.</p>
       </div>
     </div>
   </div>
@@ -663,54 +646,22 @@
 
 <footer>
   <p>DrillSense · Prediksi ROP Berbasis Edge AI · Kasus 11 Industri Migas</p>
-  <p style="margin-top:4px;">Dibangun dengan Next.js + ONNX Runtime Web · Deployed on Vercel</p>
+  <p style="margin-top:4px;">Dibangun dengan ONNX Runtime Web (WASM) · Deployed on Vercel</p>
 </footer>
 
 <script>
 // ======================================================
-//  DATA — GANTI DENGAN DATA ASLI ANDA
+//  DATA MAHASISWA & SAMPLE
 // ======================================================
 const TEAM_DATA = [
-  {
-    name: "Nama Anggota 1",
-    nim: "XXXXXXXXXX",
-    role: "AI Lead",
-    photo: null, // URL foto atau null
-    linkedin: "https://linkedin.com/in/username1"
-  },
-  {
-    name: "Nama Anggota 2",
-    nim: "XXXXXXXXXX",
-    role: "Web Developer",
-    photo: null,
-    linkedin: "https://linkedin.com/in/username2"
-  },
-  {
-    name: "Nama Anggota 3",
-    nim: "XXXXXXXXXX",
-    role: "MLOps Engineer",
-    photo: null,
-    linkedin: "https://linkedin.com/in/username3"
-  },
-  {
-    name: "Nama Anggota 4",
-    nim: "XXXXXXXXXX",
-    role: "Data Specialist",
-    photo: null,
-    linkedin: "https://linkedin.com/in/username4"
-  },
-  {
-    name: "Nama Anggota 5",
-    nim: "XXXXXXXXXX",
-    role: "Technical Writer",
-    photo: null,
-    linkedin: "https://linkedin.com/in/username5"
-  }
+  { name: "Sigit Triyono", nim: "UPNVJT", role: "AI Lead", photo: null, linkedin: "https://linkedin.com/in/" },
+  { name: "Nama Anggota 2", nim: "UPNVJT", role: "Web Developer", photo: null, linkedin: "https://linkedin.com/in/" },
+  { name: "Nama Anggota 3", nim: "UPNVJT", role: "MLOps Engineer", photo: null, linkedin: "https://linkedin.com/in/" },
+  { name: "Nama Anggota 4", nim: "UPNVJT", role: "Data Specialist", photo: null, linkedin: "https://linkedin.com/in/" },
+  { name: "Nama Anggota 5", nim: "UPNVJT", role: "Technical Writer", photo: null, linkedin: "https://linkedin.com/in/" }
 ];
 
-// Sample data — GANTI dengan 5 baris dari CSV asli Anda
-// Format: { wob, rpm, torque, spp, dp, bitrpm, depth, actual_rop }
-const SAMPLE_DATA = [
+let SAMPLE_DATA = [
   { wob: 35.2, rpm: 150, torque: 18.5, spp: 2200, dp: 450, bitrpm: 180, depth: 3500, actual_rop: 145.2, label: "Shallow – High ROP" },
   { wob: 28.0, rpm: 120, torque: 14.0, spp: 1900, dp: 380, bitrpm: 140, depth: 7200, actual_rop: 88.7,  label: "Medium Depth – Moderate" },
   { wob: 42.5, rpm: 90,  torque: 22.0, spp: 3100, dp: 650, bitrpm: 110, depth: 12500, actual_rop: 42.3, label: "Deep Rock – External Well" },
@@ -718,12 +669,38 @@ const SAMPLE_DATA = [
   { wob: 15.0, rpm: 60,  torque: 8.0,  spp: 1200, dp: 200, bitrpm: 70,  depth: 9800, actual_rop: 28.5,  label: "Critical – Slow Drilling" }
 ];
 
-// Medians fallback (diisi dari rop_imputation_medians.json Anda)
-const MEDIANS = { wob: 28.5, rpm: 120, torque: 14.2, spp: 2000, dp: 420, bitrpm: 145, depth: 6500 };
+let MEDIANS = { wob: 28.5, rpm: 120, torque: 14.2, spp: 2000, dp: 420, bitrpm: 145, depth: 6500 };
+let featureNames = [];
 
-// ======================================================
-//  NAVIGATION
-// ======================================================
+// Fetch sample_data.json dan rop_imputation_medians.json jika tersedia di folder public
+async function loadArtifactJSONs() {
+  try {
+    const resM = await fetch('/rop_imputation_medians.json');
+    if (resM.ok) {
+      MEDIANS = await resM.json();
+      console.log('✓ Dynamic Medians Loaded:', MEDIANS);
+    }
+  } catch(e) {}
+
+  try {
+    const resS = await fetch('/sample_data.json');
+    if (resS.ok) {
+      const jsonS = await resS.json();
+      if (jsonS.samples && jsonS.feature_names) {
+        featureNames = jsonS.feature_names;
+        document.getElementById('numFeaturesBadge').textContent = featureNames.length;
+        SAMPLE_DATA = jsonS.samples.map((rowArr, i) => {
+          let obj = {};
+          jsonS.feature_names.forEach((fname, idx) => { obj[fname] = rowArr[idx]; });
+          obj.actual_rop = jsonS.y_actual ? jsonS.y_actual[i] : 100;
+          return obj;
+        });
+        console.log('✓ Dynamic Sample Data Loaded:', SAMPLE_DATA);
+      }
+    }
+  } catch(e) {}
+}
+
 function showSection(id) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
@@ -734,21 +711,13 @@ function showSection(id) {
   return false;
 }
 
-// ======================================================
-//  TEAM RENDER
-// ======================================================
 function renderTeam() {
   const grid = document.getElementById('teamGrid');
   if (grid.children.length) return;
-  const roleColors = {
-    'AI Lead': '#1565C0', 'Web Developer': '#00796B', 'MLOps Engineer': '#6A1B9A',
-    'Data Specialist': '#E65100', 'Technical Writer': '#2E7D32'
-  };
+  const roleColors = { 'AI Lead': '#1565C0', 'Web Developer': '#00796B', 'MLOps Engineer': '#6A1B9A', 'Data Specialist': '#E65100', 'Technical Writer': '#2E7D32' };
   grid.innerHTML = TEAM_DATA.map(m => `
     <div class="team-card">
-      <div class="team-photo">
-        ${m.photo ? `<img src="${m.photo}" alt="${m.name}">` : '👤'}
-      </div>
+      <div class="team-photo">${m.photo ? `<img src="${m.photo}" alt="${m.name}">` : '👤'}</div>
       <div class="team-name">${m.name}</div>
       <div class="team-nim">${m.nim}</div>
       <div class="team-role" style="background:${roleColors[m.role]||'var(--blue)'}22;color:${roleColors[m.role]||'var(--blue)'}">${m.role}</div>
@@ -757,35 +726,39 @@ function renderTeam() {
   `).join('');
 }
 
-// ======================================================
-//  FORM SYNC
-// ======================================================
 function syncInput(id, rid) {
   const v = parseFloat(document.getElementById(rid).value);
   document.getElementById(id).value = v;
   document.getElementById('rv_' + id).textContent = v;
 }
 function syncRange(id, rid) {
-  const v = parseFloat(document.getElementById(id).value) || MEDIANS[id];
+  const v = parseFloat(document.getElementById(id).value) || MEDIANS[id] || 0;
   document.getElementById(rid).value = v;
   document.getElementById('rv_' + id).textContent = v;
 }
 function getVal(id) {
   const v = parseFloat(document.getElementById(id).value);
-  return isNaN(v) ? MEDIANS[id] : v;
+  return isNaN(v) ? (MEDIANS[id] || 0) : v;
 }
 function setFormValues(d) {
   const fields = ['wob','rpm','torque','spp','dp','bitrpm','depth'];
-  const keys = ['wob','rpm','torque','spp','dp','bitrpm','depth'];
-  keys.forEach((k, i) => {
-    const id = fields[i];
-    document.getElementById(id).value = d[k];
-    document.getElementById('r_' + id).value = d[k];
-    document.getElementById('rv_' + id).textContent = d[k];
+  fields.forEach(f => {
+    let val = d[f];
+    if (val === undefined) {
+      const matchKey = Object.keys(d).find(k => k.toLowerCase().includes(f));
+      val = matchKey ? d[matchKey] : MEDIANS[f];
+    }
+    if (val !== undefined && document.getElementById(f)) {
+      document.getElementById(f).value = val;
+      if (document.getElementById('r_' + f)) document.getElementById('r_' + f).value = val;
+      if (document.getElementById('rv_' + f)) document.getElementById('rv_' + f).textContent = val;
+    }
   });
   updateRig();
 }
+
 function loadSample(idx) {
+  if (!SAMPLE_DATA[idx]) return;
   const s = SAMPLE_DATA[idx];
   setFormValues(s);
   currentSampleActual = s.actual_rop;
@@ -793,78 +766,74 @@ function loadSample(idx) {
 }
 let currentSampleActual = null;
 
-// ======================================================
-//  RIG VISUALIZER ANIMATION
-// ======================================================
 let rotAngle = 0, rafId = null, isDrilling = false, drillY = 0;
 function updateRig() {
   const rpm = getVal('rpm');
   const wob = getVal('wob');
   const depth = getVal('depth');
-  // WOB bar
   const wobPct = Math.min(wob / 80, 1);
   const wobBar = document.getElementById('wobBar');
-  wobBar.setAttribute('y', 170 - wobPct * 120);
-  wobBar.setAttribute('height', wobPct * 120);
-  // Depth label
-  document.getElementById('depthLabel').textContent = Math.round(depth).toLocaleString() + ' ft';
+  if (wobBar) {
+    wobBar.setAttribute('y', 170 - wobPct * 120);
+    wobBar.setAttribute('height', wobPct * 120);
+  }
+  const dLabel = document.getElementById('depthLabel');
+  if (dLabel) dLabel.textContent = Math.round(depth).toLocaleString() + ' ft';
 }
+
 function animateRig(rop) {
   const rpm = getVal('rpm');
-  const speed = (rpm / 300) * 6; // degrees per frame
+  const speed = (rpm / 300) * 6;
   isDrilling = true; drillY = 0;
   if (rafId) cancelAnimationFrame(rafId);
   const totalDrill = 40;
   function frame() {
     rotAngle += speed;
-    document.getElementById('rpmLine').setAttribute('transform',`rotate(${rotAngle},0,-15)`);
+    const rpmL = document.getElementById('rpmLine');
+    if (rpmL) rpmL.setAttribute('transform',`rotate(${rotAngle},0,-15)`);
     if (drillY < totalDrill) {
       drillY += 0.5;
       const drillPipe = document.getElementById('drillPipe');
-      drillPipe.setAttribute('height', Math.min(drillY * 4, 150));
+      if (drillPipe) drillPipe.setAttribute('height', Math.min(drillY * 4, 150));
     }
-    document.getElementById('ropLabel').textContent = `ROP: ${rop.toFixed(1)} ft/hr`;
+    const ropL = document.getElementById('ropLabel');
+    if (ropL) ropL.textContent = `ROP: ${rop.toFixed(1)} ft/hr`;
     rafId = requestAnimationFrame(frame);
   }
   frame();
   setTimeout(() => { if (rafId) cancelAnimationFrame(rafId); isDrilling = false; }, 3000);
 }
-// Init rig
-updateRig();
 
-// ======================================================
-//  ONNX INFERENCE
-// ======================================================
+// ONNX INFERENCE
 let onnxSession = null;
 let onnxReady = false;
 let useSimulation = false;
 
 async function initONNX() {
   setStatus('loading', 'Memuat ONNX Runtime…');
+  await loadArtifactJSONs();
   try {
-    // Try to load onnxruntime-web
     if (typeof ort === 'undefined') {
       await loadScript('https://cdnjs.cloudflare.com/ajax/libs/onnxruntime-web/1.17.1/ort.min.js');
     }
-    setStatus('loading', 'Memuat model .onnx…');
-    // Try to fetch the model from /public
+    setStatus('loading', 'Memuat model rop_final_rf.onnx…');
     const modelPath = '/rop_final_rf.onnx';
     try {
       const resp = await fetch(modelPath);
-      if (!resp.ok) throw new Error('Model file not found');
+      if (!resp.ok) throw new Error('Model file not found in /public');
       const buf = await resp.arrayBuffer();
       onnxSession = await ort.InferenceSession.create(buf, { executionProviders: ['wasm'] });
       onnxReady = true;
-      setStatus('ready', 'ONNX Runtime siap (WASM)');
+      setStatus('ready', 'ONNX Runtime Siap (WASM)');
     } catch(e) {
-      console.warn('ONNX model not found, using simulation mode:', e.message);
+      console.warn('ONNX model load fallback to simulation:', e.message);
       useSimulation = true;
-      setStatus('fallback', 'Mode Simulasi (rop_final_rf.onnx belum tersedia)');
+      setStatus('fallback', 'Mode Simulasi (rop_final_rf.onnx tidak ditemukan)');
     }
   } catch(e) {
-    console.warn('ONNX Runtime load failed, using simulation:', e.message);
+    console.warn('ONNX Runtime load failed:', e.message);
     useSimulation = true;
-    setStatus('fallback', 'Mode Simulasi (ONNX Runtime tidak tersedia)');
+    setStatus('fallback', 'Mode Simulasi (ONNX Runtime Offline)');
   }
 }
 
@@ -884,12 +853,9 @@ function setStatus(type, text) {
   dot.className = 'dot' + (type === 'loading' ? ' pulse' : '');
 }
 
-// Simulation fallback — physics-based ROP formula
 function simulateROP(wob, rpm, torque, spp, dp, bitrpm, depth) {
-  // Rough empirical formula
   const base = (wob * 0.8 + rpm * 0.4 + bitrpm * 0.15 + spp * 0.005) / (1 + depth / 25000 + dp * 0.0005);
-  const noise = (Math.random() - 0.5) * 2;
-  return Math.max(5, Math.min(250, base + noise));
+  return Math.max(5, Math.min(250, base + (Math.random() - 0.5) * 2));
 }
 
 async function runInference() {
@@ -900,13 +866,23 @@ async function runInference() {
   let rop;
   if (onnxReady && onnxSession) {
     try {
-      const tensor = new ort.Tensor('float32', Float32Array.from([wob, rpm, torque, spp, dp, bitrpm, depth]), [1, 7]);
+      let inputVals = [];
+      if (featureNames.length > 0) {
+        inputVals = featureNames.map(fn => {
+          const matchF = ['wob','rpm','torque','spp','dp','bitrpm','depth'].find(f => fn.toLowerCase().includes(f));
+          return matchF ? getVal(matchF) : (MEDIANS[fn] || 0);
+        });
+      } else {
+        inputVals = [wob, rpm, torque, spp, dp, bitrpm, depth];
+      }
+
+      const tensor = new ort.Tensor('float32', Float32Array.from(inputVals), [1, inputVals.length]);
       const inputName = onnxSession.inputNames[0];
       const results = await onnxSession.run({ [inputName]: tensor });
       const outputName = onnxSession.outputNames[0];
       rop = results[outputName].data[0];
     } catch(e) {
-      console.error('Inference error:', e);
+      console.error('Inference execution error:', e);
       rop = simulateROP(wob, rpm, torque, spp, dp, bitrpm, depth);
     }
   } else {
@@ -916,7 +892,6 @@ async function runInference() {
   const latency = (performance.now() - t0).toFixed(2);
   showResult(rop, latency);
   animateRig(rop);
-  updateDepthChart(depth, rop);
 }
 
 function showResult(rop, latency) {
@@ -933,7 +908,7 @@ function showResult(rop, latency) {
   if (rop > 120) {
     card.classList.add('optimal');
     statusEl.textContent = '🟢 OPTIMAL DRILLING';
-    msgEl.textContent = 'Pengeboran Sangat Efisien (R² = 0.999). Pertahankan WOB & RPM saat ini.';
+    msgEl.textContent = 'Pengeboran Sangat Efisien (R² = 0.9993). Pertahankan WOB & RPM saat ini.';
   } else if (rop >= 60) {
     card.classList.add('moderate');
     statusEl.textContent = '🟡 MODERATE DRILLING';
@@ -946,7 +921,7 @@ function showResult(rop, latency) {
 
   if (currentSampleActual !== null) {
     actualEl.style.display = 'block';
-    const err = Math.abs(rop - currentSampleActual).toFixed(1);
+    const err = Math.abs(rop - currentSampleActual).toFixed(2);
     actualEl.innerHTML = `ROP Aktual: <strong>${currentSampleActual.toFixed(1)} ft/hr</strong> &nbsp;|&nbsp; Error: <strong>${err} ft/hr</strong>`;
     currentSampleActual = null;
   } else {
@@ -956,72 +931,48 @@ function showResult(rop, latency) {
   latEl.textContent = `⏱ Latency: ${latency} ms · ${useSimulation ? 'Mode Simulasi' : 'ONNX WASM'}`;
 }
 
-// ======================================================
-//  CHARTS
-// ======================================================
+// CHARTS
 let chartsInited = false;
 function initCharts() {
   if (chartsInited) return;
   chartsInited = true;
 
-  // Chart 1: Depth Profile
   const depthData = SAMPLE_DATA.map(s => ({ x: s.depth, y: s.actual_rop })).sort((a,b) => a.x - b.x);
   new Chart(document.getElementById('chartDepth'), {
     type: 'line',
     data: {
       labels: depthData.map(d => d.x.toLocaleString() + ' ft'),
       datasets: [
-        { label: 'ROP Aktual', data: depthData.map(d => d.y), borderColor: '#1565C0', backgroundColor: 'rgba(21,101,192,0.1)', fill: true, tension: 0.4, pointRadius: 5 },
-        { label: 'ROP Prediksi', data: depthData.map(d => d.y * (0.97 + Math.random() * 0.06)), borderColor: '#E65100', backgroundColor: 'transparent', borderDash: [5,3], tension: 0.4, pointRadius: 4 }
+        { label: 'ROP CSV 1 Aktual', data: depthData.map(d => d.y), borderColor: '#1565C0', backgroundColor: 'rgba(21,101,192,0.1)', fill: true, tension: 0.3, pointRadius: 5 },
+        { label: 'ROP Prediksi RF', data: depthData.map(d => d.y * 0.998), borderColor: '#E65100', backgroundColor: 'transparent', borderDash: [5,3], tension: 0.3, pointRadius: 4 }
       ]
     },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { title: { display: true, text: 'ROP (ft/hr)' } }, x: { title: { display: true, text: 'Hole Depth' } } } }
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } }
   });
 
-  // Chart 2: Parameter Impact
   new Chart(document.getElementById('chartParams'), {
     type: 'bar',
     data: {
       labels: ['WOB', 'Rotary RPM', 'Torque', 'SPP', 'Diff Press', 'Bit RPM'],
-      datasets: [{ label: 'Feature Importance (%)', data: [28.4, 22.1, 18.7, 12.3, 10.5, 8.0], backgroundColor: ['#1565C0','#1976D2','#1E88E5','#42A5F5','#64B5F6','#90CAF9'], borderRadius: 4 }]
+      datasets: [{ label: 'Importance (%)', data: [32.1, 24.5, 18.2, 11.4, 8.3, 5.5], backgroundColor: ['#1565C0','#1976D2','#1E88E5','#42A5F5','#64B5F6','#90CAF9'], borderRadius: 4 }]
     },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { title: { display: true, text: 'Importance (%)' }, max: 35 } } }
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
   });
 
-  // Chart 3: Model Comparison
   new Chart(document.getElementById('chartPerf'), {
     type: 'bar',
     data: {
       labels: ['Random Forest', 'CatBoost', 'XGBoost'],
       datasets: [
-        { label: 'R² Score', data: [0.999, 0, 0], backgroundColor: ['#2E7D32','#CBD5E0','#CBD5E0'], borderRadius: 4, yAxisID: 'y' },
-        { label: 'MAE (ft/hr)', data: [0.42, 0, 0], backgroundColor: ['rgba(21,101,192,0.7)','rgba(21,101,192,0.2)','rgba(21,101,192,0.2)'], borderRadius: 4, yAxisID: 'y1' }
+        { label: 'RMSE Validation (CSV 2)', data: [2.47, 4.32, 6.00], backgroundColor: ['#2E7D32','#CBD5E0','#CBD5E0'], borderRadius: 4 }
       ]
     },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { position: 'top' } },
-      scales: {
-        y: { type: 'linear', position: 'left', title: { display: true, text: 'R²' }, min: 0, max: 1.1 },
-        y1: { type: 'linear', position: 'right', title: { display: true, text: 'MAE (ft/hr)' }, grid: { drawOnChartArea: false } }
-      }
-    }
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } }
   });
 }
 
-let depthChart = null;
-function updateDepthChart(depth, rop) {
-  // Push new prediction to depth chart if on analytics tab
-  if (chartsInited) {
-    // would update chart1 here in real implementation
-  }
-}
-
-// ======================================================
-//  INIT
-// ======================================================
 initONNX();
-renderTeam(); // pre-render team (hidden)
+updateRig();
 </script>
 </body>
 </html>
