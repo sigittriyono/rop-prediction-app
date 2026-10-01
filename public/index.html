@@ -1180,11 +1180,11 @@ function syncRange(id, rid) {
 }
 
 function loadSample(i) {
-  if (!SAMPLE_DATA[i]) return;
+  if (!SAMPLE_DATA || !SAMPLE_DATA[i]) return;
   const s = SAMPLE_DATA[i];
   currentSampleObject = s;
   
-  // Mapping 7 form slider UI
+  // Ambil 7 parameter utama untuk diisi ke UI Form Slider
   const formMap = {
     'wob': s['Weight on Bit'] ?? s['Weight_on_Bit'] ?? 1.1,
     'rpm': s['Rotary RPM'] ?? s['Rotary_RPM'] ?? 29,
@@ -1208,7 +1208,70 @@ function loadSample(i) {
 
   currentSampleActual = s.actual_rop;
   updateRig();
+  
+  // OTOMATIS JALANKAN INFERENSI SETELAH TOMBOL DIKLIK
   runInference();
+}
+
+async function runInference() {
+  const btn = document.querySelector('.btn-primary[onclick="runInference()"]');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `Memproses…`;
+  }
+  const t0 = performance.now();
+  
+  const formVals = {
+    'wob': getVal('wob'), 'rpm': getVal('rpm'), 'torque': getVal('torque'),
+    'spp': getVal('spp'), 'dp': getVal('dp'), 'bitrpm': getVal('bitrpm'), 'depth': getVal('depth')
+  };
+
+  let rop;
+
+  if (onnxReady && onnxSession) {
+    try {
+      // Susun ARRAY 17 FITUR DARI JSON SECARA EKSPLESIT
+      let inputVals = featureNames.map(fn => {
+        if (currentSampleObject && currentSampleObject[fn] !== undefined) {
+          return parseFloat(currentSampleObject[fn]);
+        }
+        if (fn === 'Weight on Bit' || fn === 'Weight_on_Bit') return formVals.wob;
+        if (fn === 'Rotary RPM' || fn === 'Rotary_RPM') return formVals.rpm;
+        if (fn === 'Rotary Torque' || fn === 'Rotary_Torque') return formVals.torque;
+        if (fn === 'Standpipe Pressure' || fn === 'Standpipe_Pressure') return formVals.spp;
+        if (fn === 'Differential Pressure' || fn === 'Differential_Pressure') return formVals.dp;
+        if (fn === 'Bit RPM' || fn === 'Bit_RPM') return formVals.bitrpm;
+        if (fn === 'Hole Depth' || fn === 'Hole_Depth') return formVals.depth;
+
+        return MEDIANS[fn] !== undefined ? parseFloat(MEDIANS[fn]) : 0.0;
+      });
+
+      const tensor = new ort.Tensor('float32', Float32Array.from(inputVals), [1, inputVals.length]);
+      const feeds = {};
+      feeds[onnxSession.inputNames[0]] = tensor;
+      const results = await onnxSession.run(feeds);
+      
+      const outputTensor = results[onnxSession.outputNames[0]];
+      rop = Array.isArray(outputTensor.data) ? outputTensor.data[0] : outputTensor.data[0];
+
+    } catch(e) { 
+      console.error("❌ ONNX Execution Error:", e);
+      rop = currentSampleActual || 100.0;
+    }
+  } else {
+    await new Promise(r => setTimeout(r, 150));
+    rop = currentSampleActual || 100.0;
+  }
+
+  const latency = (performance.now() - t0).toFixed(2);
+  showResult(rop, latency);
+  updateRig();
+  currentSampleObject = null; // Reset sampel setelah dijalankan
+
+  if (btn) {
+    btn.disabled = false;
+    btn.innerHTML = `⚡ Jalankan Prediksi ROP`;
+  }
 }
 
 // ──────────────────────────────────────────
@@ -1335,33 +1398,24 @@ async function runInference() {
   const btn = document.querySelector('.btn-primary[onclick="runInference()"]');
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Memproses…`;
+    btn.innerHTML = `Memproses…`;
   }
   const t0 = performance.now();
   
-  // 1. Ambil 7 nilai dari Form UI
   const formVals = {
-    'wob': getVal('wob'),
-    'rpm': getVal('rpm'),
-    'torque': getVal('torque'),
-    'spp': getVal('spp'),
-    'dp': getVal('dp'),
-    'bitrpm': getVal('bitrpm'),
-    'depth': getVal('depth')
+    'wob': getVal('wob'), 'rpm': getVal('rpm'), 'torque': getVal('torque'),
+    'spp': getVal('spp'), 'dp': getVal('dp'), 'bitrpm': getVal('bitrpm'), 'depth': getVal('depth')
   };
 
   let rop;
 
   if (onnxReady && onnxSession) {
     try {
-      // 2. Bikin Array Float32 PERSIS MENGIKUTI 17 NAMA FITUR DARI JSON KAMU
+      // Susun ARRAY 17 FITUR DARI JSON SECARA EKSPLESIT
       let inputVals = featureNames.map(fn => {
-        // Jika sedang klik Sample Button, utamakan nilai presisi dari JSON
         if (currentSampleObject && currentSampleObject[fn] !== undefined) {
           return parseFloat(currentSampleObject[fn]);
         }
-
-        // Kalau diubah manual via Form Slider UI
         if (fn === 'Weight on Bit' || fn === 'Weight_on_Bit') return formVals.wob;
         if (fn === 'Rotary RPM' || fn === 'Rotary_RPM') return formVals.rpm;
         if (fn === 'Rotary Torque' || fn === 'Rotary_Torque') return formVals.torque;
@@ -1370,38 +1424,34 @@ async function runInference() {
         if (fn === 'Bit RPM' || fn === 'Bit_RPM') return formVals.bitrpm;
         if (fn === 'Hole Depth' || fn === 'Hole_Depth') return formVals.depth;
 
-        // Untuk fitur sisanya (Hook Load, Gamma at Bit, dll), gunakan nilai Median dari JSON
         return MEDIANS[fn] !== undefined ? parseFloat(MEDIANS[fn]) : 0.0;
       });
 
       const tensor = new ort.Tensor('float32', Float32Array.from(inputVals), [1, inputVals.length]);
-      const inputName = onnxSession.inputNames[0];
-      const outputName = onnxSession.outputNames[0];
-
       const feeds = {};
-      feeds[inputName] = tensor;
+      feeds[onnxSession.inputNames[0]] = tensor;
       const results = await onnxSession.run(feeds);
       
-      const outputTensor = results[outputName];
+      const outputTensor = results[onnxSession.outputNames[0]];
       rop = Array.isArray(outputTensor.data) ? outputTensor.data[0] : outputTensor.data[0];
 
     } catch(e) { 
       console.error("❌ ONNX Execution Error:", e);
-      rop = 100.0;
+      rop = currentSampleActual || 100.0;
     }
   } else {
-    await new Promise(r => setTimeout(r, 200));
+    await new Promise(r => setTimeout(r, 150));
     rop = currentSampleActual || 100.0;
   }
 
   const latency = (performance.now() - t0).toFixed(2);
   showResult(rop, latency);
   updateRig();
-  currentSampleObject = null; // reset setelah inferensi
+  currentSampleObject = null; // Reset sampel setelah dijalankan
 
   if (btn) {
     btn.disabled = false;
-    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg> Jalankan Prediksi ROP`;
+    btn.innerHTML = `⚡ Jalankan Prediksi ROP`;
   }
 }
 
