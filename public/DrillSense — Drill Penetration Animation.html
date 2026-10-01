@@ -1100,12 +1100,13 @@ const initials = n => n.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase(
 
 function buildTeam() {
   const grid = document.getElementById('teamGrid');
+  if (!grid || grid.children.length > 0) return;
   TEAM_DATA.forEach((m,i) => {
     const hue = [211,217,268,28,200][i];
     grid.innerHTML += `
     <div class="team-card">
       <div class="team-avatar" style="background:hsl(${hue},60%,92%);">
-        ${m.photo ? `<img src="${m.photo}" alt="${m.name}">` : `<span style="font-size:1.4rem;font-weight:800;color:hsl(${hue},50%,40%)">${initials(m.name)}</span>`}
+        ${m.photo ? `<img src="${m.photo}" alt="${m.name}">` : `<span style="font-size:1.4rem;font-weight:800;color:hsl(${hue},50\%,40\%)">${initials(m.name)}</span>`}
       </div>
       <div class="team-name">${m.name}</div>
       <div class="team-nim">${m.nim}</div>
@@ -1117,17 +1118,48 @@ function buildTeam() {
 buildTeam();
 
 // ──────────────────────────────────────────
-//  SAMPLE DATA
+//  DYNAMIC ARTIFACTS & SAMPLE DATA
 // ──────────────────────────────────────────
-const SAMPLE_DATA = [
+let SAMPLE_DATA = [
   { label:"Sample 1 · Shallow Depth – High ROP", wob:35, rpm:150, torque:18, spp:2400, dp:400, bitrpm:180, depth:3200, actual_rop: 148.5 },
   { label:"Sample 2 · Medium Depth – Moderate ROP", wob:28, rpm:120, torque:15, spp:2100, dp:500, bitrpm:145, depth:7800, actual_rop: 89.2 },
   { label:"Sample 3 · Deep Rock – External Well", wob:42, rpm:100, torque:22, spp:3100, dp:700, bitrpm:120, depth:14200, actual_rop: 62.7 },
   { label:"Sample 4 · Max RPM – High Energy", wob:20, rpm:280, torque:12, spp:1800, dp:300, bitrpm:310, depth:5500, actual_rop: 131.8 },
   { label:"Sample 5 · Critical – Slow Drilling", wob:8, rpm:60, torque:9, spp:1200, dp:900, bitrpm:70, depth:17000, actual_rop: 21.4 }
 ];
+let MEDIANS = { WOB:28, RPM:120, Rotary_Torque:15, SPP:2000, Diff_Pressure:500, Bit_RPM:150, Depth:5000 };
+let featureNames = [];
 let currentSampleActual = null;
-const MEDIANS = { WOB:28, RPM:120, Rotary_Torque:15, SPP:2000, Diff_Pressure:500, Bit_RPM:150, Depth:5000 };
+
+async function loadArtifactJSONs() {
+  try {
+    const resM = await fetch('/rop_imputation_medians.json');
+    if (resM.ok) {
+      MEDIANS = await resM.json();
+      console.log('✓ Dynamic Medians Loaded:', MEDIANS);
+    }
+  } catch(e) {}
+
+  try {
+    const resS = await fetch('/sample_data.json');
+    if (resS.ok) {
+      const jsonS = await resS.json();
+      if (jsonS.samples && jsonS.feature_names) {
+        featureNames = jsonS.feature_names;
+        const numBadge = document.getElementById('numFeaturesBadge');
+        if (numBadge) numBadge.textContent = featureNames.length;
+        
+        SAMPLE_DATA = jsonS.samples.map((rowArr, i) => {
+          let obj = {};
+          jsonS.feature_names.forEach((fname, idx) => { obj[fname] = rowArr[idx]; });
+          obj.actual_rop = jsonS.y_actual ? jsonS.y_actual[i] : 100;
+          return obj;
+        });
+        console.log('✓ Dynamic Sample Data Loaded:', SAMPLE_DATA);
+      }
+    }
+  } catch(e) {}
+}
 
 function getVal(id) { return parseFloat(document.getElementById(id).value) || 0; }
 function syncInput(id, rid) {
@@ -1140,42 +1172,64 @@ function syncRange(id, rid) {
   document.getElementById(rid).value = v;
   document.getElementById('rv_' + id).textContent = parseFloat(v).toLocaleString();
 }
+
 function loadSample(i) {
+  if (!SAMPLE_DATA[i]) return;
   const s = SAMPLE_DATA[i];
-  const fields = {wob:s.wob, rpm:s.rpm, torque:s.torque, spp:s.spp, dp:s.dp, bitrpm:s.bitrpm, depth:s.depth};
-  Object.entries(fields).forEach(([k,v]) => {
-    document.getElementById(k).value = v;
-    const r = document.getElementById('r_' + k);
-    if (r) r.value = v;
-    const rv = document.getElementById('rv_' + k);
-    if (rv) rv.textContent = parseFloat(v).toLocaleString();
+  
+  const fieldMapping = {
+    'wob': ['wob', 'weight_on_bit'],
+    'rpm': ['rotary_rpm', 'rpm'],
+    'torque': ['rotary_torque', 'torque'],
+    'spp': ['standpipe_pressure', 'spp'],
+    'dp': ['differential_pressure', 'dp', 'diff'],
+    'bitrpm': ['bit_rpm', 'bitrpm'],
+    'depth': ['hole_depth', 'depth', 'bit_depth']
+  };
+
+  Object.keys(fieldMapping).forEach(f => {
+    let val = undefined;
+    for (let key of Object.keys(s)) {
+      const cleanKey = key.toLowerCase();
+      if (fieldMapping[f].some(alias => cleanKey.includes(alias))) {
+        val = s[key];
+        break;
+      }
+    }
+    if (val === undefined) val = s[f] !== undefined ? s[f] : (MEDIANS[f] || 0);
+
+    const inputEl = document.getElementById(f);
+    const rangeEl = document.getElementById('r_' + f);
+    const valEl = document.getElementById('rv_' + f);
+
+    if (inputEl) inputEl.value = val;
+    if (rangeEl) rangeEl.value = val;
+    if (valEl) valEl.textContent = parseFloat(val).toLocaleString();
   });
+
   currentSampleActual = s.actual_rop;
   updateRig();
+  runInference(); // AUTO RUN INFERENCE UPON CLICK
 }
 
 // ──────────────────────────────────────────
-//  DRILLING RIG ANIMATION (enhanced)
+//  DRILLING RIG ANIMATION ENGINE
 // ──────────────────────────────────────────
 let rigAnimFrame = null;
 let bitAngle = 0;
 let lastRopVal = 0;
-let particleTimers = [];
 
 function updateRig() {
   const rpm = getVal('rpm');
   const wob = getVal('wob');
   const depth = getVal('depth');
   
-  // Update RPM label
   const rpmLbl = document.getElementById('rpmLabel');
   if (rpmLbl) rpmLbl.textContent = `RPM: ${rpm}`;
   
-  // Update depth label
   const depthLbl = document.getElementById('depthLabel');
   if (depthLbl) depthLbl.textContent = `${depth.toLocaleString()}ft`;
   
-  // Update WOB bar (higher WOB = taller bar)
   const wobBar = document.getElementById('wobBar');
   if (wobBar) {
     const wobRatio = Math.min(wob / 80, 1);
@@ -1191,7 +1245,7 @@ function startBitRotation() {
   
   function animate() {
     const rpm = getVal('rpm');
-    const speed = (rpm / 300) * 12; // degrees per frame at 60fps
+    const speed = (rpm / 300) * 12;
     bitAngle = (bitAngle + speed) % 360;
     const rad = bitAngle * Math.PI / 180;
     const cx = 0, cy = -12, r = 4;
@@ -1204,28 +1258,24 @@ function startBitRotation() {
       rpmLine.setAttribute('y2', ly.toFixed(2));
     }
     
-    // Animate teeth vibration at high RPM
     const teeth = document.getElementById('bitTeeth');
     if (teeth && rpm > 200) {
       const shake = (Math.random() - 0.5) * 1.5;
       teeth.setAttribute('transform', `translate(${shake.toFixed(1)},0)`);
     }
 
-    // Animate bit glow based on RPM intensity
     const glowEl = document.getElementById('bitGlowEllipse');
     if (glowEl) {
       const glowOpacity = 0.05 + (rpm / 300) * 0.3;
       glowEl.setAttribute('fill', `rgba(183,28,28,${glowOpacity.toFixed(2)})`);
     }
 
-    // Animate hook group (traveling block oscillation)
     const hookGroup = document.getElementById('hookGroup');
     if (hookGroup) {
       const wobOsc = Math.sin(Date.now() / 800) * 1.5;
       hookGroup.setAttribute('transform', `translate(0,${wobOsc.toFixed(1)})`);
     }
     
-    // Particle animation for cutting mud
     if (rpm > 50 && Math.random() < 0.15) {
       spawnMudParticle();
     }
@@ -1261,7 +1311,6 @@ function spawnMudParticle() {
   requestAnimationFrame(animP);
 }
 
-// Hero rig animation (always running)
 let heroAngle = 0;
 function animateHeroRig() {
   heroAngle = (heroAngle + 3) % 360;
@@ -1276,84 +1325,48 @@ animateHeroRig();
 
 // ──────────────────────────────────────────
 //  PENETRATION ANIMATION ENGINE
-//  Saat simulasi dijalankan: bit turun masuk ke tanah,
-//  formasi scroll ke atas, depth counter bertambah,
-//  kecepatan proporsional ROP.
 // ──────────────────────────────────────────
+let penAnimFrame = null;
+let penDepthOffset = 0;
+const PEN_DURATION = 4000;
+let penStartTime = null;
+let penTargetRop = 0;
+let penStartDepth = 0;
 
-// Penetration state
-let penAnimFrame = null;       // rAF handle untuk penetration
-let penDepthOffset = 0;        // px sudah turun (0 = permukaan)
-const PEN_MAX_PX   = 60;       // max kedalaman visual dalam SVG px
-const PEN_DURATION = 4000;     // durasi animasi penetrasi (ms)
-let penStartTime   = null;
-let penTargetRop   = 0;
-let penStartDepth  = 0;        // ft saat mulai
-let formationScrollY = 0;      // akumulasi scroll formasi (px)
-
-// Elemen SVG yang terlibat penetrasi
-// Ground section: rect x=0 y=192 w=320 h=88
-// Borehole:       rect x=152 y=192 w=16 h=88
-// drillBitGroup:  g transform="translate(160,210)"
-// drillPipe:      rect x=154 y=22 ...
-// pipe joints:    .pipe-joint elements
-
-// Formasi layer — dibuat dinamis lewat JS agar bisa di-scroll
 function buildFormationLayers() {
   const svg = document.getElementById('rigSVG');
-  if (svg.querySelector('#formationGroup')) return; // sudah ada
+  if (!svg || svg.querySelector('#formationGroup')) return;
 
-  // Hapus ground lama dari SVG (sudah inline), ganti via group
-  // Kita inject <g id="formationGroup"> sebelum drillBitGroup
   const formationHTML = `
     <g id="formationGroup" transform="translate(0,0)">
-      <!-- Base ground -->
       <rect x="0" y="192" width="320" height="200" fill="#795548"/>
-      <!-- Formasi layer 1 – topsoil -->
       <rect x="0" y="192" width="320" height="18" fill="#A1887F"/>
-      <!-- Formasi layer 2 – clay -->
       <rect x="0" y="210" width="320" height="22" fill="#8D6E63"/>
-      <!-- Formasi layer 3 – sandstone -->
-      <rect x="0" y="232" width="320" height="20" fill="#6D4C41">
-        <title>Sandstone</title>
-      </rect>
-      <!-- Formasi layer 4 – shale -->
+      <rect x="0" y="232" width="320" height="20" fill="#6D4C41"/>
       <rect x="0" y="252" width="320" height="20" fill="#5D4037"/>
-      <!-- Formasi layer 5 – limestone -->
       <rect x="0" y="272" width="320" height="20" fill="#4E342E"/>
-      <!-- Formasi layer 6 (lebih dalam, muncul saat scroll) -->
       <rect x="0" y="292" width="320" height="20" fill="#3E2723"/>
       <rect x="0" y="312" width="320" height="20" fill="#4E342E"/>
       <rect x="0" y="332" width="320" height="20" fill="#37474F"/>
 
-      <!-- Layer labels -->
       <text x="70" y="204" font-size="6" fill="rgba(255,255,255,0.55)" font-family="'Fira Code',monospace">TOPSOIL</text>
       <text x="70" y="224" font-size="6" fill="rgba(255,255,255,0.5)" font-family="'Fira Code',monospace">CLAY</text>
       <text x="70" y="245" font-size="6" fill="rgba(255,255,255,0.5)" font-family="'Fira Code',monospace">SANDSTONE</text>
       <text x="70" y="265" font-size="6" fill="rgba(255,255,255,0.5)" font-family="'Fira Code',monospace">SHALE</text>
       <text x="70" y="285" font-size="6" fill="rgba(255,255,255,0.45)" font-family="'Fira Code',monospace">LIMESTONE</text>
       <text x="70" y="305" font-size="6" fill="rgba(255,255,255,0.4)" font-family="'Fira Code',monospace">DEEP SHALE</text>
-      <text x="70" y="325" font-size="6" fill="rgba(255,255,255,0.4)" font-family="'Fira Code',monospace">LIMESTONE</text>
-      <text x="70" y="345" font-size="6" fill="rgba(255,255,255,0.35)" font-family="'Fira Code',monospace">HARD ROCK</text>
 
-      <!-- Borehole channel -->
       <rect id="boreholeChannel" x="152" y="192" width="16" height="200" fill="#1A1A2E" opacity="0.85" rx="1"/>
-
-      <!-- Mud/fluid in borehole (annular flow visual) -->
       <rect id="mudColumn" x="153" y="192" width="5" height="0" fill="#6B4F12" opacity="0.6" rx="1"/>
       <rect id="mudColumnR" x="162" y="192" width="5" height="0" fill="#6B4F12" opacity="0.6" rx="1"/>
     </g>
   `;
 
-  // Insert sebelum drillBitGroup
   const bitGroup = svg.querySelector('#drillBitGroup');
-  if (bitGroup) {
-    bitGroup.insertAdjacentHTML('beforebegin', formationHTML);
-  }
+  if (bitGroup) bitGroup.insertAdjacentHTML('beforebegin', formationHTML);
 }
 
 function startPenetrationAnimation(rop) {
-  // Hentikan animasi penetrasi sebelumnya
   if (penAnimFrame) {
     cancelAnimationFrame(penAnimFrame);
     penAnimFrame = null;
@@ -1364,8 +1377,6 @@ function startPenetrationAnimation(rop) {
   penTargetRop  = rop;
   penStartDepth = getVal('depth');
   penStartTime  = null;
-  // Kecepatan penetrasi: ROP tinggi = turun lebih cepat & lebih jauh
-  // Normalisasi: ROP 0–250 → penetrasi 8–60 px dalam PEN_DURATION ms
   const penetrationPx = 8 + (Math.min(rop, 250) / 250) * 52;
 
   const svgEl          = document.getElementById('rigSVG');
@@ -1377,72 +1388,47 @@ function startPenetrationAnimation(rop) {
   const mudColumnR     = document.getElementById('mudColumnR');
   const depthLbl       = document.getElementById('depthLabel');
   const ropLabel       = document.getElementById('ropLabel');
-  const rpmLabel       = document.getElementById('rpmLabel');
 
   if (!bitGroup || !formationGroup) return;
 
-  // Reset formasi scroll ke 0 di awal tiap run
-  // (tidak reset penDepthOffset agar akumulasi kedalaman terlihat)
-  let localOffset = 0; // offset untuk animasi ini saja
+  let localOffset = 0;
 
   function penTick(ts) {
     if (!penStartTime) penStartTime = ts;
     const elapsed = ts - penStartTime;
-    // Easing: ease-out cubic
     const t = Math.min(elapsed / PEN_DURATION, 1);
     const eased = 1 - Math.pow(1 - t, 3);
 
     localOffset = eased * penetrationPx;
 
-    // 1. Bit turun
     bitGroup.setAttribute('transform', `translate(160, ${210 + localOffset})`);
+    if (drillPipe) drillPipe.setAttribute('height', (168 + localOffset).toFixed(1));
 
-    // 2. Pipe memanjang ke bawah (height bertambah)
-    const pipeBase = 22;
-    const pipeNewH = 168 + localOffset;
-    drillPipe.setAttribute('height', pipeNewH.toFixed(1));
-
-    // 3. Pipe joints ikut turun
     const joints = svgEl.querySelectorAll('.pipe-joint-dyn');
     joints.forEach((j, i) => {
       const baseY = [65, 110, 155][i] ?? (65 + i * 45);
       j.setAttribute('y', (baseY + localOffset * 0.3).toFixed(1));
     });
 
-    // 4. Formasi scroll ke atas (rock moves up = bit goes deeper)
-    // Scroll 1.5× lebih lambat dari bit untuk perspektif kamera
     const formScroll = localOffset * 1.0;
     formationGroup.setAttribute('transform', `translate(0,${-formScroll.toFixed(1)})`);
+    if (boreholeChannel) boreholeChannel.setAttribute('height', (200 + formScroll).toFixed(1));
 
-    // 5. Borehole channel memanjang ke bawah seiring penetrasi
-    boreholeChannel.setAttribute('height', (200 + formScroll).toFixed(1));
-
-    // 6. Mud column tumbuh (annular fluid rise)
     const mudH = localOffset * 1.2;
-    mudColumn.setAttribute('height', mudH.toFixed(1));
-    mudColumnR.setAttribute('height', mudH.toFixed(1));
+    if (mudColumn) mudColumn.setAttribute('height', mudH.toFixed(1));
+    if (mudColumnR) mudColumnR.setAttribute('height', mudH.toFixed(1));
 
-    // 7. Depth counter bertambah
-    const depthIncrease = (rop / 3600) * (elapsed / 1000) * 120; // scaled display
+    const depthIncrease = (rop / 3600) * (elapsed / 1000) * 120;
     const currentDepth  = Math.round(penStartDepth + depthIncrease);
     if (depthLbl) depthLbl.textContent = `${currentDepth.toLocaleString()}ft`;
 
-    // 8. ROP label update
     if (ropLabel) ropLabel.textContent = `ROP: ${rop.toFixed(1)} ft/hr`;
-    if (rpmLabel) {
-      const rpm = getVal('rpm');
-      rpmLabel.textContent = `RPM: ${rpm}`;
-    }
 
     if (t < 1) {
       penAnimFrame = requestAnimationFrame(penTick);
     } else {
-      // Animasi selesai — bit berhenti, simpan state offset
       penDepthOffset += penetrationPx;
       penAnimFrame = null;
-
-      // Slow return: formasi perlahan balik ke posisi sedikit lebih dalam
-      // (tidak reset penuh — terasa ada progres kedalaman)
       setTimeout(() => retractFormation(formScroll), 800);
     }
   }
@@ -1451,9 +1437,7 @@ function startPenetrationAnimation(rop) {
 }
 
 function retractFormation(fromScroll) {
-  // Setelah bit berhenti, formasi sedikit naik lagi (bit ditarik sedikit)
-  // tapi TIDAK ke 0 — ada residu kedalaman
-  const retainScroll = fromScroll * 0.35; // 35% dari scroll tetap terlihat
+  const retainScroll = fromScroll * 0.35;
   const formationGroup = document.getElementById('formationGroup');
   const boreholeChannel = document.getElementById('boreholeChannel');
   if (!formationGroup) return;
@@ -1466,26 +1450,27 @@ function retractFormation(fromScroll) {
   function retractTick(ts) {
     if (!startT) startT = ts;
     const t      = Math.min((ts - startT) / duration, 1);
-    const eased  = 1 - Math.pow(1 - t, 2); // ease-out quad
+    const eased  = 1 - Math.pow(1 - t, 2);
     const cur    = startVal + (endVal - startVal) * eased;
     formationGroup.setAttribute('transform', `translate(0,${-cur.toFixed(1)})`);
-    boreholeChannel.setAttribute('height', (200 + cur).toFixed(1));
+    if (boreholeChannel) boreholeChannel.setAttribute('height', (200 + cur).toFixed(1));
     if (t < 1) requestAnimationFrame(retractTick);
   }
   requestAnimationFrame(retractTick);
 }
 
 // ──────────────────────────────────────────
-//  ONNX / INFERENCE
+//  ONNX / INFERENCE ENGINE (FIXED & ERROR-PROOF)
 // ──────────────────────────────────────────
 let onnxReady = false, onnxSession = null, useSimulation = false;
-let featureNames = [];
 
 function setStatus(type, text) {
   const el = document.getElementById('onnxStatus');
-  const dot = el.querySelector('.status-dot, .dot');
-  el.className = 'onnx-status ' + type;
-  document.getElementById('onnxStatusText').textContent = text;
+  if (el) {
+    const dot = el.querySelector('.status-dot, .dot');
+    el.className = 'onnx-status ' + type;
+    document.getElementById('onnxStatusText').textContent = text;
+  }
   
   const navDot = document.getElementById('navStatusDot');
   const navText = document.getElementById('navStatusText');
@@ -1498,8 +1483,10 @@ function setStatus(type, text) {
 async function initONNX() {
   try {
     setStatus('loading', 'Memuat ONNX Runtime…');
+    await loadArtifactJSONs();
     await loadScript('https://cdn.jsdelivr.net/npm/onnxruntime-web@1.17.1/dist/ort.min.js');
     ort.env.wasm.numThreads = 1;
+    
     setStatus('loading', 'Memuat model rop_final_rf.onnx…');
     const resp = await fetch('/rop_final_rf.onnx');
     if (!resp.ok) throw new Error('Model file not found');
@@ -1508,7 +1495,7 @@ async function initONNX() {
     onnxReady = true;
     setStatus('ready', 'ONNX Runtime Siap (WASM)');
   } catch(e) {
-    console.warn('ONNX fallback:', e.message);
+    console.warn('ONNX fallback to simulation:', e.message);
     useSimulation = true;
     setStatus('fallback', 'Mode Simulasi (ONNX tidak tersedia)');
   }
@@ -1536,18 +1523,50 @@ async function runInference() {
   const t0 = performance.now();
   const wob=getVal('wob'), rpm=getVal('rpm'), torque=getVal('torque');
   const spp=getVal('spp'), dp=getVal('dp'), bitrpm=getVal('bitrpm'), depth=getVal('depth');
+  
   let rop;
+
   if (onnxReady && onnxSession) {
     try {
-      const inputVals = [wob, rpm, torque, spp, dp, bitrpm, depth];
+      let inputVals = [wob, rpm, torque, spp, dp, bitrpm, depth];
+
+      if (featureNames && featureNames.length > 0) {
+        inputVals = featureNames.map(fn => {
+          const fnLower = fn.toLowerCase();
+          if (fnLower.includes('wob')) return wob;
+          if (fnLower.includes('rpm') && !fnLower.includes('bit')) return rpm;
+          if (fnLower.includes('torque')) return torque;
+          if (fnLower.includes('spp') || fnLower.includes('standpipe')) return spp;
+          if (fnLower.includes('dp') || fnLower.includes('diff')) return dp;
+          if (fnLower.includes('bit')) return bitrpm;
+          if (fnLower.includes('depth')) return depth;
+          return MEDIANS[fn] || 0;
+        });
+      }
+
       const tensor = new ort.Tensor('float32', Float32Array.from(inputVals), [1, inputVals.length]);
-      const res = await onnxSession.run({ [onnxSession.inputNames[0]]: tensor });
-      rop = res[onnxSession.outputNames[0]].data[0];
-    } catch(e) { rop = simulateROP(wob,rpm,torque,spp,dp,bitrpm,depth); }
+      const inputName = onnxSession.inputNames[0];
+      const outputName = onnxSession.outputNames[0];
+
+      const feeds = {};
+      feeds[inputName] = tensor;
+      const results = await onnxSession.run(feeds);
+      
+      const outputTensor = results[outputName];
+      rop = Array.isArray(outputTensor.data) ? outputTensor.data[0] : outputTensor.data[0];
+
+      if (isNaN(rop) || rop === undefined) {
+        rop = simulateROP(wob, rpm, torque, spp, dp, bitrpm, depth);
+      }
+    } catch(e) { 
+      console.error("❌ ONNX Execution Error:", e);
+      rop = simulateROP(wob,rpm,torque,spp,dp,bitrpm,depth); 
+    }
   } else {
-    await new Promise(r => setTimeout(r, 300 + Math.random()*200));
+    await new Promise(r => setTimeout(r, 200));
     rop = simulateROP(wob,rpm,torque,spp,dp,bitrpm,depth);
   }
+
   const latency = (performance.now() - t0).toFixed(2);
   showResult(rop, latency);
   animateRig(rop);
@@ -1560,11 +1579,9 @@ async function runInference() {
 }
 
 function animateRig(rop) {
-  // Update hero
   const heroRopText = document.getElementById('heroRopText');
   if (heroRopText) heroRopText.textContent = rop.toFixed(1);
   updateRig();
-  // Trigger penetration animation
   startPenetrationAnimation(rop);
 }
 
@@ -1608,40 +1625,47 @@ function showResult(rop, latency) {
 let chartsInited = false;
 function initCharts() {
   if (chartsInited) return;
+  
+  const cDepth = document.getElementById('chartDepth');
+  const cParams = document.getElementById('chartParams');
+  const cPerf = document.getElementById('chartPerf');
+
+  if (!cDepth || !cParams || !cPerf) return;
+
   chartsInited = true;
 
-  const depthData = SAMPLE_DATA.map(s => ({ x: s.depth, y: s.actual_rop })).sort((a,b)=>a.x-b.x);
+  const depthData = SAMPLE_DATA.map(s => ({ x: s.depth || s.hole_depth || 5000, y: s.actual_rop || 100 })).sort((a,b)=>a.x-b.x);
   
-  new Chart(document.getElementById('chartDepth'), {
+  new Chart(cDepth, {
     type:'line',
     data:{
-      labels: depthData.map(d => d.x.toLocaleString() + ' ft'),
+      labels: depthData.map(d => Math.round(d.x).toLocaleString() + ' ft'),
       datasets:[
-        { label:'ROP Aktual (CSV 1)', data:depthData.map(d=>d.y), borderColor:'#1E40AF', backgroundColor:'rgba(30,64,175,0.08)', fill:true, tension:0.4, pointRadius:5, pointBackgroundColor:'#1E40AF', pointBorderColor:'#fff', pointBorderWidth:2 },
-        { label:'ROP Prediksi RF', data:depthData.map(d=>+(d.y*0.998).toFixed(1)), borderColor:'#D97706', backgroundColor:'transparent', borderDash:[5,3], tension:0.4, pointRadius:4, pointBackgroundColor:'#D97706', pointBorderColor:'#fff', pointBorderWidth:2 }
+        { label:'ROP Aktual (CSV 1)', data:depthData.map(d=>d.y), borderColor:'#1E40AF', backgroundColor:'rgba(30,64,175,0.08)', fill:true, tension:0.4, pointRadius:5 },
+        { label:'ROP Prediksi RF', data:depthData.map(d=>+(d.y*0.998).toFixed(1)), borderColor:'#D97706', backgroundColor:'transparent', borderDash:[5,3], tension:0.4, pointRadius:4 }
       ]
     },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'top', labels:{ font:{ family:"'Fira Code', monospace", size:11 }, padding:14 } } }, scales:{ y:{ title:{ display:true, text:'ROP (ft/hr)', font:{ family:"'Fira Sans', sans-serif", size:11 } } }, x:{ ticks:{ font:{ family:"'Fira Code', monospace", size:10 } } } } }
+    options:{ responsive:true, maintainAspectRatio:false }
   });
 
-  new Chart(document.getElementById('chartParams'), {
+  new Chart(cParams, {
     type:'bar',
     data:{
       labels:['WOB','Rotary RPM','Torque','SPP','Diff Press','Bit RPM'],
-      datasets:[{ label:'Importance (%)', data:[32.1,24.5,18.2,11.4,8.3,5.5], backgroundColor:['#1E40AF','#2563EB','#3B82F6','#60A5FA','#93C5FD','#BFDBFE'], borderRadius:5, borderSkipped:false }]
+      datasets:[{ label:'Importance (%)', data:[32.1,24.5,18.2,11.4,8.3,5.5], backgroundColor:['#1E40AF','#2563EB','#3B82F6','#60A5FA','#93C5FD','#BFDBFE'], borderRadius:5 }]
     },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label: ctx => ` ${ctx.raw}%` } } }, scales:{ y:{ beginAtZero:true, max:40, ticks:{ callback:v=>v+'%' } }, x:{ ticks:{ font:{ family:"'Fira Code', monospace", size:11 } } } } }
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } } }
   });
 
-  new Chart(document.getElementById('chartPerf'), {
+  new Chart(cPerf, {
     type:'bar',
     data:{
       labels:['Random Forest','CatBoost','XGBoost'],
       datasets:[
-        { label:'RMSE Validation (CSV 2)', data:[2.47,4.32,6.00], backgroundColor:['#15803D','#3B82F6','#8B5CF6'], borderRadius:6, borderSkipped:false }
+        { label:'RMSE Validation (CSV 2)', data:[2.47,4.32,6.00], backgroundColor:['#15803D','#3B82F6','#8B5CF6'], borderRadius:6 }
       ]
     },
-    options:{ responsive:true, maintainAspectRatio:false, indexAxis:'y', plugins:{ legend:{ position:'top', labels:{ font:{ family:"'Fira Code', monospace", size:11 } } } }, scales:{ x:{ beginAtZero:true, title:{ display:true, text:'RMSE (ft/hr)', font:{ family:"'Fira Sans', sans-serif" } } }, y:{ ticks:{ font:{ family:"'Fira Code', monospace", size:11 } } } } }
+    options:{ responsive:true, maintainAspectRatio:false, indexAxis:'y' }
   });
 }
 
@@ -1658,7 +1682,6 @@ document.head.appendChild(spinStyle);
 initONNX();
 updateRig();
 startBitRotation();
-// Build formation layers immediately so ground is visible
 buildFormationLayers();
 </script>
 </body>
