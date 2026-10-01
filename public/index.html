@@ -46,7 +46,6 @@ body{
   min-height:100vh;
 }
 
-/* ── GRID BACKGROUND ── */
 body::before{
   content:'';
   position:fixed;inset:0;
@@ -57,7 +56,6 @@ body::before{
   pointer-events:none;z-index:0;
 }
 
-/* ── NAV ── */
 nav{
   background:rgba(255,255,255,0.92);
   backdrop-filter:blur(12px);
@@ -113,11 +111,9 @@ nav{
 .status-dot.loading{background:#D97706;box-shadow:0 0 0 3px rgba(217,119,6,0.25);}
 .status-dot.error{background:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,0.25);}
 
-/* ── SECTIONS ── */
 .section{display:none;padding:2rem;max-width:1200px;margin:0 auto;position:relative;z-index:1;}
 .section.active{display:block;}
 
-/* ── SECTION HEADER ── */
 .sec-header{margin-bottom:1.75rem;}
 .sec-eyebrow{
   font-size:0.72rem;font-family:var(--font-mono);
@@ -133,7 +129,6 @@ nav{
   font-size:0.9rem;color:var(--color-text-muted);margin-top:0.4rem;max-width:560px;
 }
 
-/* ── HERO ── */
 .hero{
   background:linear-gradient(135deg,#1E3A8A 0%,#1E40AF 55%,#2563EB 100%);
   color:#fff;
@@ -171,7 +166,6 @@ nav{
   display:flex;align-items:center;justify-content:center;
 }
 
-/* ── STAT GRID ── */
 .stat-grid{
   display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;
   margin-bottom:1.75rem;
@@ -201,7 +195,6 @@ nav{
 .stat-card.green .stat-val{color:var(--color-green);}
 .stat-lbl{font-size:0.75rem;color:var(--color-text-muted);font-weight:600;margin-top:4px;}
 
-/* ── PILLAR CARDS ── */
 .pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.75rem;}
 .pillar{
   background:var(--color-card);
@@ -225,7 +218,6 @@ nav{
 .pillar-text h3{font-size:0.9rem;font-weight:700;color:var(--color-text);margin-bottom:0.3rem;}
 .pillar-text p{font-size:0.8rem;color:var(--color-text-muted);line-height:1.55;}
 
-/* ── CTA CARD ── */
 .cta-card{
   background:linear-gradient(135deg,#EFF6FF,#DBEAFE);
   border:1.5px solid var(--color-border);
@@ -235,7 +227,6 @@ nav{
 }
 .cta-card p{font-size:0.95rem;color:var(--color-text-muted);margin-bottom:1rem;}
 
-/* ── BUTTONS ── */
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:8px;
   padding:10px 22px;border-radius:var(--radius-sm);
@@ -256,10 +247,8 @@ nav{
 .btn-block{width:100%;}
 .btn-sm{padding:7px 14px;font-size:0.82rem;}
 
-/* ── INFERENCE LAYOUT ── */
 .inference-layout{display:grid;grid-template-columns:340px 1fr;gap:1.5rem;align-items:start;}
 
-/* ── CARD ── */
 .card{
   background:var(--color-card);
   border:1px solid var(--color-border);
@@ -281,7 +270,6 @@ nav{
 }
 .card-icon svg{width:15px;height:15px;stroke:var(--color-primary);fill:none;stroke-width:2;}
 
-/* ── FORM ── */
 .form-group{margin-bottom:0.9rem;}
 .form-label{
   display:flex;align-items:baseline;gap:4px;
@@ -316,7 +304,6 @@ nav{
 }
 .form-input:focus{outline:none;border-color:var(--color-primary);background:#fff;box-shadow:0 0 0 3px rgba(30,64,175,0.1);}
 
-/* ── SAMPLE BTNS ── */
 .sample-btns{display:flex;flex-direction:column;gap:0.4rem;}
 .btn-sample{
   width:100%;padding:8px 12px;
@@ -331,7 +318,6 @@ nav{
   width:8px;height:8px;border-radius:50%;flex-shrink:0;background:var(--color-secondary);
 }
 
-/* ── RIG CANVAS ── */
 .rig-canvas-wrap{
   background:linear-gradient(180deg,#E8F4FD 0%,#C9E2F8 60%,#D4B483 100%);
   border:2px solid var(--color-border);
@@ -341,7 +327,6 @@ nav{
 }
 #rigSVG{width:100%;height:100%;}
 
-/* ── RESULT CARD ── */
 .result-card{
   border-radius:var(--radius);
   padding:1.5rem;border:2px solid;
@@ -387,7 +372,6 @@ nav{
   font-family:var(--font-mono);color:var(--color-text-faint);
 }
 
-/* ── ONNX STATUS ── */
 .onnx-status{
   display:inline-flex;align-items:center;gap:7px;
   font-size:0.76rem;font-family:var(--font-mono);font-weight:600;
@@ -397,11 +381,9 @@ nav{
 .onnx-status.ready{background:#DCFCE7;color:#15803D;}
 .onnx-status.fallback{background:#FEE2E2;color:#B91C1C;}
 
-/* ── CHARTS ── */
 .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;}
 .chart-wrap{position:relative;height:260px;}
 
-/* ── PERFORMANCE TABLE ── */
 .perf-table{width:100%;border-collapse:collapse;font-size:0.84rem;margin-top:1rem;}
 .perf-table thead tr{background:var(--color-primary);color:#fff;}
 .perf-table th{padding:9px 14px;text-align:left;font-weight:700;font-size:0.8rem;}
@@ -418,7 +400,6 @@ nav{
 .perf-pill.win{background:var(--color-green);color:#fff;}
 .perf-pill.other{background:var(--color-muted);color:var(--color-text-muted);}
 
-/* ── TEAM ── */
 .team-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;}
 .team-card{
   background:var(--color-card);
@@ -454,7 +435,6 @@ nav{
 }
 .btn-linkedin:hover{background:#004499;}
 
-/* ── AI CONTRIB ── */
 .ai-contrib{
   background:linear-gradient(135deg,#EFF6FF,#DBEAFE);
   border:1px solid var(--color-border);
@@ -472,7 +452,6 @@ nav{
 .ai-item.orange h4{color:var(--color-accent);}
 .ai-item.green h4{color:var(--color-green);}
 
-/* ── FOOTER ── */
 footer{
   text-align:center;padding:2rem;
   font-size:0.8rem;color:var(--color-text-faint);
@@ -482,39 +461,8 @@ footer{
 }
 footer span{color:var(--color-primary);font-weight:600;}
 
-/* ── DRILL ANIMATION ── */
-@keyframes drill-rotate{
-  from{transform:rotate(0deg);}
-  to{transform:rotate(360deg);}
-}
-@keyframes bit-bounce{
-  0%,100%{transform:translateY(0);}
-  50%{transform:translateY(3px);}
-}
-@keyframes pipe-descend{
-  0%{stroke-dashoffset:200;}
-  100%{stroke-dashoffset:0;}
-}
-@keyframes mud-flow{
-  0%{transform:translateY(-10px);opacity:0;}
-  30%{opacity:0.7;}
-  100%{transform:translateY(30px);opacity:0;}
-}
-@keyframes chip-fly{
-  0%{transform:translate(0,0) scale(1);opacity:1;}
-  100%{transform:translate(var(--dx),var(--dy)) scale(0);opacity:0;}
-}
-@keyframes depth-pulse{
-  0%,100%{opacity:0.6;}
-  50%{opacity:1;}
-}
-@keyframes rig-shake{
-  0%,100%{transform:translateX(0);}
-  25%{transform:translateX(-1.5px);}
-  75%{transform:translateX(1.5px);}
-}
+@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 
-/* ── RESPONSIVE ── */
 @media(max-width:960px){
   .inference-layout{grid-template-columns:1fr;}
   .stat-grid{grid-template-columns:repeat(2,1fr);}
@@ -531,9 +479,6 @@ footer span{color:var(--color-primary);font-weight:600;}
   .stat-grid{grid-template-columns:repeat(2,1fr);}
   .team-grid{grid-template-columns:repeat(2,1fr);}
   .ai-contrib-grid{grid-template-columns:1fr;}
-}
-@media(prefers-reduced-motion:reduce){
-  *{animation-duration:.01ms !important;transition-duration:.01ms !important;}
 }
 </style>
 </head>
@@ -579,25 +524,18 @@ footer span{color:var(--color-primary);font-weight:600;}
       </div>
       <div class="hero-rig-wrap">
         <svg id="heroRigSVG" viewBox="0 0 120 170" xmlns="http://www.w3.org/2000/svg">
-          <!-- Derrick structure -->
           <line x1="40" y1="10" x2="60" y2="130" stroke="rgba(255,255,255,0.4)" stroke-width="2.5"/>
           <line x1="80" y1="10" x2="60" y2="130" stroke="rgba(255,255,255,0.4)" stroke-width="2.5"/>
           <line x1="40" y1="10" x2="80" y2="10" stroke="rgba(255,255,255,0.4)" stroke-width="2.5"/>
-          <!-- Cross braces -->
           <line x1="43" y1="40" x2="77" y2="40" stroke="rgba(255,255,255,0.2)" stroke-width="1.2"/>
           <line x1="46" y1="70" x2="74" y2="70" stroke="rgba(255,255,255,0.2)" stroke-width="1.2"/>
           <line x1="49" y1="100" x2="71" y2="100" stroke="rgba(255,255,255,0.2)" stroke-width="1.2"/>
-          <!-- Crown block -->
           <circle cx="60" cy="12" r="6" fill="#FCD34D" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
-          <!-- Hook block animated -->
           <g id="hookGroup">
             <rect x="53" y="60" width="14" height="8" rx="3" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
           </g>
-          <!-- Drill string -->
           <rect id="heroPipe" x="57" y="20" width="6" height="110" fill="url(#heroPipeGrad)" rx="2"/>
-          <!-- Drill collar -->
           <rect x="55" y="118" width="10" height="14" fill="rgba(255,255,255,0.35)" rx="2"/>
-          <!-- Rotating bit -->
           <g id="heroBitGroup">
             <polygon points="60,130 52,145 68,145" fill="#F59E0B"/>
             <rect x="56" y="130" width="8" height="4" fill="#FCD34D" rx="1"/>
@@ -605,16 +543,10 @@ footer span{color:var(--color-primary);font-weight:600;}
               <rect x="54" y="143" width="4" height="5" fill="#B45309" rx="1"/>
               <rect x="62" y="143" width="4" height="5" fill="#B45309" rx="1"/>
             </g>
-            <!-- Rotating indicator -->
             <circle cx="60" cy="136" r="3.5" fill="rgba(255,255,255,0.3)"/>
             <line id="heroRpmLine" x1="60" y1="136" x2="63" y2="134" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
           </g>
-          <!-- Ground level -->
           <rect x="0" y="148" width="120" height="22" fill="rgba(180,120,40,0.25)" rx="2"/>
-          <!-- Cutting particles -->
-          <circle id="chip1" cx="68" cy="148" r="2" fill="#FCD34D" opacity="0.8"/>
-          <circle id="chip2" cx="52" cy="148" r="1.5" fill="#F59E0B" opacity="0.7"/>
-          <!-- ROP label -->
           <text x="60" y="165" font-size="7" fill="rgba(255,255,255,0.7)" text-anchor="middle" font-family="'Fira Code',monospace">ROP: <tspan id="heroRopText">—</tspan> ft/hr</text>
           <defs>
             <linearGradient id="heroPipeGrad" x1="0" y1="0" x2="1" y2="0">
@@ -642,7 +574,7 @@ footer span{color:var(--color-primary);font-weight:600;}
       <div class="stat-lbl">Latensi Inferensi WASM</div>
     </div>
     <div class="stat-card secondary">
-      <div class="stat-val" id="numFeaturesBadge">7</div>
+      <div class="stat-val" id="numFeaturesBadge">17</div>
       <div class="stat-lbl">Parameter Input Fitur</div>
     </div>
   </div>
@@ -716,11 +648,26 @@ footer span{color:var(--color-primary);font-weight:600;}
           <h3>Sample Data Cepat (CSV 1 External Test)</h3>
         </div>
         <div class="sample-btns" id="sampleBtnsContainer">
-          <button class="btn-sample" onclick="loadSample(0)"><span class="sample-dot" style="background:#22c55e;"></span>Sample 1 · Shallow Depth – High ROP</button>
-          <button class="btn-sample" onclick="loadSample(1)"><span class="sample-dot" style="background:#3B82F6;"></span>Sample 2 · Medium Depth – Moderate ROP</button>
-          <button class="btn-sample" onclick="loadSample(2)"><span class="sample-dot" style="background:#8B5CF6;"></span>Sample 3 · Deep Rock – External Well</button>
-          <button class="btn-sample" onclick="loadSample(3)"><span class="sample-dot" style="background:#D97706;"></span>Sample 4 · Max RPM – High Energy</button>
-          <button class="btn-sample" onclick="loadSample(4)"><span class="sample-dot" style="background:#ef4444;"></span>Sample 5 · Critical – Slow Drilling</button>
+          <button class="btn-sample" onclick="loadSample(0)">
+            <span class="sample-dot" style="background:#3B82F6;"></span>
+            📌 Sample 1 · ROP 97.87 ft/hr
+          </button>
+          <button class="btn-sample" onclick="loadSample(1)">
+            <span class="sample-dot" style="background:#3B82F6;"></span>
+            📍 Sample 2 · ROP 100.12 ft/hr
+          </button>
+          <button class="btn-sample" onclick="loadSample(2)">
+            <span class="sample-dot" style="background:#3B82F6;"></span>
+            🔩 Sample 3 · ROP 100.26 ft/hr
+          </button>
+          <button class="btn-sample" onclick="loadSample(3)">
+            <span class="sample-dot" style="background:#22c55e;"></span>
+            ⚡ Sample 4 · ROP 126.82 ft/hr
+          </button>
+          <button class="btn-sample" onclick="loadSample(4)">
+            <span class="sample-dot" style="background:#22c55e;"></span>
+            🚀 Sample 5 · High ROP 149.11 ft/hr
+          </button>
         </div>
       </div>
 
@@ -735,58 +682,58 @@ footer span{color:var(--color-primary);font-weight:600;}
         <div class="form-group">
           <label class="form-label">Weight on Bit (WOB) <span class="form-label-unit">klbf</span></label>
           <div class="range-row">
-            <input type="range" class="form-range" id="r_wob" min="0" max="80" step="0.5" value="30" oninput="syncInput('wob','r_wob')">
-            <span class="range-val" id="rv_wob">30</span>
+            <input type="range" class="form-range" id="r_wob" min="0" max="10" step="0.1" value="1.1" oninput="syncInput('wob','r_wob')">
+            <span class="range-val" id="rv_wob">1.1</span>
           </div>
-          <input type="number" class="form-input" id="wob" value="30" oninput="syncRange('wob','r_wob')" placeholder="klbf">
+          <input type="number" class="form-input" id="wob" value="1.1" step="0.1" oninput="syncRange('wob','r_wob')" placeholder="klbf">
         </div>
         <div class="form-group">
           <label class="form-label">Rotary RPM <span class="form-label-unit">rpm</span></label>
           <div class="range-row">
-            <input type="range" class="form-range" id="r_rpm" min="0" max="300" step="1" value="120" oninput="syncInput('rpm','r_rpm');updateRig()">
-            <span class="range-val" id="rv_rpm">120</span>
+            <input type="range" class="form-range" id="r_rpm" min="0" max="300" step="1" value="29" oninput="syncInput('rpm','r_rpm');updateRig()">
+            <span class="range-val" id="rv_rpm">29</span>
           </div>
-          <input type="number" class="form-input" id="rpm" value="120" oninput="syncRange('rpm','r_rpm');updateRig()" placeholder="rpm">
+          <input type="number" class="form-input" id="rpm" value="29" oninput="syncRange('rpm','r_rpm');updateRig()" placeholder="rpm">
         </div>
         <div class="form-group">
           <label class="form-label">Rotary Torque <span class="form-label-unit">kft·lbf</span></label>
           <div class="range-row">
-            <input type="range" class="form-range" id="r_torque" min="0" max="50" step="0.5" value="15" oninput="syncInput('torque','r_torque')">
-            <span class="range-val" id="rv_torque">15</span>
+            <input type="range" class="form-range" id="r_torque" min="0" max="10" step="0.001" value="1.528" oninput="syncInput('torque','r_torque')">
+            <span class="range-val" id="rv_torque">1.528</span>
           </div>
-          <input type="number" class="form-input" id="torque" value="15" oninput="syncRange('torque','r_torque')" placeholder="kft·lbf">
+          <input type="number" class="form-input" id="torque" value="1.528" step="0.001" oninput="syncRange('torque','r_torque')" placeholder="kft·lbf">
         </div>
         <div class="form-group">
           <label class="form-label">Standpipe Pressure <span class="form-label-unit">psi</span></label>
           <div class="range-row">
-            <input type="range" class="form-range" id="r_spp" min="0" max="4000" step="10" value="2000" oninput="syncInput('spp','r_spp')">
-            <span class="range-val" id="rv_spp">2000</span>
+            <input type="range" class="form-range" id="r_spp" min="0" max="4000" step="1" value="2607" oninput="syncInput('spp','r_spp')">
+            <span class="range-val" id="rv_spp">2,607</span>
           </div>
-          <input type="number" class="form-input" id="spp" value="2000" oninput="syncRange('spp','r_spp')" placeholder="psi">
+          <input type="number" class="form-input" id="spp" value="2607" oninput="syncRange('spp','r_spp')" placeholder="psi">
         </div>
         <div class="form-group">
           <label class="form-label">Differential Pressure <span class="form-label-unit">psi</span></label>
           <div class="range-row">
-            <input type="range" class="form-range" id="r_dp" min="0" max="2000" step="10" value="500" oninput="syncInput('dp','r_dp')">
-            <span class="range-val" id="rv_dp">500</span>
+            <input type="range" class="form-range" id="r_dp" min="0" max="200" step="0.1" value="23.9" oninput="syncInput('dp','r_dp')">
+            <span class="range-val" id="rv_dp">23.9</span>
           </div>
-          <input type="number" class="form-input" id="dp" value="500" oninput="syncRange('dp','r_dp')" placeholder="psi">
+          <input type="number" class="form-input" id="dp" value="23.9" step="0.1" oninput="syncRange('dp','r_dp')" placeholder="psi">
         </div>
         <div class="form-group">
           <label class="form-label">Bit RPM <span class="form-label-unit">rpm</span></label>
           <div class="range-row">
-            <input type="range" class="form-range" id="r_bitrpm" min="0" max="500" step="1" value="150" oninput="syncInput('bitrpm','r_bitrpm')">
-            <span class="range-val" id="rv_bitrpm">150</span>
+            <input type="range" class="form-range" id="r_bitrpm" min="0" max="500" step="1" value="156" oninput="syncInput('bitrpm','r_bitrpm')">
+            <span class="range-val" id="rv_bitrpm">156</span>
           </div>
-          <input type="number" class="form-input" id="bitrpm" value="150" oninput="syncRange('bitrpm','r_bitrpm')" placeholder="rpm">
+          <input type="number" class="form-input" id="bitrpm" value="156" oninput="syncRange('bitrpm','r_bitrpm')" placeholder="rpm">
         </div>
         <div class="form-group">
           <label class="form-label">Hole Depth <span class="form-label-unit">ft</span></label>
           <div class="range-row">
-            <input type="range" class="form-range" id="r_depth" min="1000" max="20000" step="100" value="5000" oninput="syncInput('depth','r_depth')">
-            <span class="range-val" id="rv_depth">5000</span>
+            <input type="range" class="form-range" id="r_depth" min="1000" max="20000" step="100" value="8000" oninput="syncInput('depth','r_depth')">
+            <span class="range-val" id="rv_depth">8,000</span>
           </div>
-          <input type="number" class="form-input" id="depth" value="5000" oninput="syncRange('depth','r_depth')" placeholder="ft">
+          <input type="number" class="form-input" id="depth" value="8000" oninput="syncRange('depth','r_depth')" placeholder="ft">
         </div>
 
         <button class="btn btn-primary btn-block" onclick="runInference()" style="margin-top:0.5rem;">
@@ -819,132 +766,59 @@ footer span{color:var(--color-primary);font-weight:600;}
                 <stop offset="60%" stop-color="#ECEFF1"/>
                 <stop offset="100%" stop-color="#78909C"/>
               </linearGradient>
-              <linearGradient id="groundGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#A1887F"/>
-                <stop offset="100%" stop-color="#6D4C41"/>
-              </linearGradient>
-              <linearGradient id="holeLining" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#5D4037"/>
-                <stop offset="100%" stop-color="#3E2723"/>
-              </linearGradient>
               <filter id="glow">
                 <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
                 <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
               </filter>
-              <radialGradient id="mudGrad" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stop-color="#8B6914" stop-opacity="0.8"/>
-                <stop offset="100%" stop-color="#5D4E37" stop-opacity="0"/>
-              </radialGradient>
             </defs>
 
-            <!-- Sky/background -->
             <rect x="0" y="0" width="320" height="280" fill="url(#skyGrad)"/>
-
-            <!-- Subtle grid lines on background -->
             <line x1="0" y1="70" x2="320" y2="70" stroke="rgba(21,101,192,0.05)" stroke-width="1"/>
             <line x1="0" y1="140" x2="320" y2="140" stroke="rgba(21,101,192,0.05)" stroke-width="1"/>
 
-            <!-- Rig platform base -->
             <rect x="80" y="185" width="160" height="8" fill="#546E7A" rx="2"/>
-
-            <!-- Derrick legs -->
             <line x1="120" y1="20" x2="155" y2="188" stroke="#455A64" stroke-width="3.5" stroke-linecap="round"/>
             <line x1="200" y1="20" x2="165" y2="188" stroke="#455A64" stroke-width="3.5" stroke-linecap="round"/>
-            <!-- Top crossbar -->
             <line x1="120" y1="20" x2="200" y2="20" stroke="#455A64" stroke-width="3.5" stroke-linecap="round"/>
-            <!-- Cross braces -->
             <line x1="125" y1="58" x2="195" y2="58" stroke="#546E7A" stroke-width="1.8" opacity="0.6"/>
             <line x1="130" y1="96" x2="190" y2="96" stroke="#546E7A" stroke-width="1.8" opacity="0.6"/>
             <line x1="135" y1="134" x2="185" y2="134" stroke="#546E7A" stroke-width="1.8" opacity="0.6"/>
-            <line x1="140" y1="165" x2="180" y2="165" stroke="#546E7A" stroke-width="1.5" opacity="0.4"/>
-            <!-- Diagonal bracing -->
-            <line x1="125" y1="58" x2="135" y2="96" stroke="#546E7A" stroke-width="1" opacity="0.35"/>
-            <line x1="195" y1="58" x2="185" y2="96" stroke="#546E7A" stroke-width="1" opacity="0.35"/>
-            <line x1="130" y1="96" x2="140" y2="134" stroke="#546E7A" stroke-width="1" opacity="0.35"/>
-            <line x1="190" y1="96" x2="180" y2="134" stroke="#546E7A" stroke-width="1" opacity="0.35"/>
 
-            <!-- Crown block -->
             <circle cx="160" cy="22" r="10" fill="#1565C0" filter="url(#glow)"/>
             <circle cx="160" cy="22" r="6" fill="#42A5F5"/>
-            <circle cx="160" cy="22" r="2.5" fill="white"/>
 
-            <!-- Traveling block / hook -->
             <g id="hookGroup">
               <rect x="151" y="68" width="18" height="11" rx="4" fill="#37474F" stroke="#546E7A" stroke-width="1"/>
-              <line x1="160" y1="22" x2="160" y2="68" stroke="#78909C" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.5"/>
             </g>
 
-            <!-- Drill string (pipe) -->
             <rect id="drillPipe" x="154" y="22" width="12" height="168" fill="url(#pipeGrad)" rx="2"/>
-            <!-- Pipe joints -->
             <rect class="pipe-joint-dyn" x="152" y="65" width="16" height="5" fill="#90A4AE" rx="1" opacity="0.8"/>
             <rect class="pipe-joint-dyn" x="152" y="110" width="16" height="5" fill="#90A4AE" rx="1" opacity="0.8"/>
             <rect class="pipe-joint-dyn" x="152" y="155" width="16" height="5" fill="#90A4AE" rx="1" opacity="0.8"/>
 
-            <!-- Drill collar / BHA -->
             <rect x="150" y="178" width="20" height="12" fill="#37474F" rx="2"/>
 
-            <!-- Ground + borehole injected dynamically by buildFormationLayers() -->
-
-            <!-- Depth measurement lines on side -->
             <line x1="40" y1="192" x2="40" y2="280" stroke="#78909C" stroke-width="1.5" opacity="0.7"/>
-            <rect x="35" y="192" width="10" height="88" fill="rgba(255,255,255,0.1)" rx="1"/>
-            <line x1="33" y1="210" x2="47" y2="210" stroke="#78909C" stroke-width="1.2" opacity="0.7"/>
-            <line x1="36" y1="230" x2="44" y2="230" stroke="#78909C" stroke-width="1" opacity="0.5"/>
-            <line x1="33" y1="250" x2="47" y2="250" stroke="#78909C" stroke-width="1.2" opacity="0.7"/>
-            <line x1="36" y1="270" x2="44" y2="270" stroke="#78909C" stroke-width="1" opacity="0.5"/>
-            <text id="depthLabel" x="26" y="215" font-size="7" fill="#90A4AE" text-anchor="middle" font-family="'Fira Code',monospace" writing-mode="tb" glyph-orientation-vertical="0">5000ft</text>
+            <text id="depthLabel" x="26" y="215" font-size="7" fill="#90A4AE" text-anchor="middle" font-family="'Fira Code',monospace" writing-mode="tb" glyph-orientation-vertical="0">8,000ft</text>
 
-            <!-- WOB bar (left side indicator) -->
             <rect x="22" y="50" width="10" height="130" fill="rgba(255,255,255,0.2)" rx="3"/>
             <rect id="wobBar" x="22" y="100" width="10" height="80" fill="#1565C0" rx="3" opacity="0.7"/>
             <text x="27" y="44" font-size="6.5" fill="#546E7A" text-anchor="middle" font-family="'Fira Code',monospace">WOB</text>
 
-            <!-- Rotating drill bit group -->
             <g id="drillBitGroup" transform="translate(160,210)">
-              <!-- Bit body -->
               <polygon points="0,-18 -10,0 10,0" fill="#B71C1C"/>
-              <polygon points="0,-18 -10,0 10,0" fill="url(#bitGlow)" opacity="0.3"/>
-              <!-- Bit shank -->
               <rect x="-5" y="-30" width="10" height="15" fill="url(#pipeGrad)" rx="1.5"/>
-              <!-- Bit blades/cutters -->
-              <g id="bitTeeth">
-                <rect x="-8" y="-3" width="5" height="7" fill="#D32F2F" rx="1.5"/>
-                <rect x="-1.5" y="-3" width="5" height="7" fill="#C62828" rx="1.5"/>
-                <rect x="4" y="-3" width="4" height="6" fill="#D32F2F" rx="1.5"/>
-              </g>
-              <!-- PDC inserts (rotating indicator) -->
               <g id="rotIndicator">
                 <circle cx="0" cy="-12" r="4" fill="#1565C0" opacity="0.5"/>
                 <line id="rpmLine" x1="0" y1="-12" x2="4" y2="-9" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
               </g>
-              <!-- Bit glow effect -->
-              <ellipse cx="0" cy="2" rx="12" ry="4" fill="rgba(183,28,28,0.15)" id="bitGlowEllipse"/>
             </g>
-            <defs>
-              <radialGradient id="bitGlow" cx="50%" cy="100%" r="60%">
-                <stop offset="0%" stop-color="#FF5722" stop-opacity="0.6"/>
-                <stop offset="100%" stop-color="transparent"/>
-              </radialGradient>
-            </defs>
 
-            <!-- Mud/cutting particles (animated) -->
-            <circle class="mud-particle" cx="155" cy="212" r="2.5" fill="#8B6914" opacity="0"/>
-            <circle class="mud-particle" cx="165" cy="215" r="2" fill="#A0522D" opacity="0"/>
-            <circle class="mud-particle" cx="152" cy="218" r="1.5" fill="#6D4C41" opacity="0"/>
-            <circle class="mud-particle" cx="168" cy="210" r="2" fill="#795548" opacity="0"/>
-
-            <!-- Derrick lights -->
-            <circle cx="120" cy="20" r="3" fill="#FFC107" opacity="0.8" filter="url(#glow)"/>
-            <circle cx="200" cy="20" r="3" fill="#FFC107" opacity="0.8" filter="url(#glow)"/>
-
-            <!-- ROP readout -->
             <rect x="80" y="255" width="80" height="18" fill="rgba(21,101,192,0.15)" rx="5"/>
             <text x="120" y="267" font-size="8" fill="#1565C0" text-anchor="middle" font-family="'Fira Code',monospace" font-weight="bold" id="ropLabel">ROP: — ft/hr</text>
 
-            <!-- RPM readout -->
             <rect x="168" y="255" width="72" height="18" fill="rgba(180,83,9,0.12)" rx="5"/>
-            <text x="204" y="267" font-size="8" fill="#B45309" text-anchor="middle" font-family="'Fira Code',monospace" font-weight="bold" id="rpmLabel">RPM: 120</text>
+            <text x="204" y="267" font-size="8" fill="#B45309" text-anchor="middle" font-family="'Fira Code',monospace" font-weight="bold" id="rpmLabel">RPM: 29</text>
           </svg>
         </div>
       </div>
@@ -1062,7 +936,7 @@ footer span{color:var(--color-primary);font-weight:600;}
         <p>Deployment Edge AI (ONNX WASM) mengeliminasi server GPU. Prediksi real-time memangkas NPT dan memperpanjang umur bit.</p>
       </div>
       <div class="ai-item green">
-        <h4>🛡️ Keselamatan Rig</h4>
+        <h4>🛡️️ Keselamatan Rig</h4>
         <p>Indikator tiga-warna (Optimal/Moderate/Critical) memberi peringatan kondisi pengeboran berbahaya sebelum insiden terjadi.</p>
       </div>
     </div>
@@ -1071,7 +945,7 @@ footer span{color:var(--color-primary);font-weight:600;}
 
 <footer>
   <span>DrillSense</span> · Prediksi ROP Berbasis Edge AI · Kasus 11 Industri Migas<br>
-  <span style="color:var(--color-text-faint);font-size:0.7rem;">ONNX Runtime Web (WASM) · Sains Data · UPNVJT · 2025</span>
+  <span style="color:var(--color-text-faint);font-size:0.7rem;">ONNX Runtime Web (WASM) · Sains Data · UPNVJT · 2026</span>
 </footer>
 
 <script>
@@ -1118,22 +992,29 @@ function buildTeam() {
 buildTeam();
 
 // ──────────────────────────────────────────
-//  DYNAMIC ARTIFACTS & DYNAMIC SAMPLE MAPPING (17 FEATURES)
+//  EXACT 17-FEATURE ARTIFACT DATA
 // ──────────────────────────────────────────
-let SAMPLE_DATA = [
-  { label:"Sample 1 · ROP 97.87 ft/hr", "Rotary Torque":1.637, "Rotary RPM":29, "Standpipe Pressure":2600, "Weight on Bit":1.1, "Hook Load":126.6, "Differential Pressure":17.9, "Inclination":2.8, "Total Mud Volume":385.8, "Gamma at Bit":-999.25, "Bit RPM":156, "Line Wear":133, "Block Height":107.8, "Min Pressure":2578, "Min Hook Load":126, "Min Torque":1, "Min RPM":28, "Min WOB":0.3, actual_rop: 97.87 },
-  { label:"Sample 2 · ROP 100.12 ft/hr", "Rotary Torque":1.996, "Rotary RPM":29, "Standpipe Pressure":2606, "Weight on Bit":1.3, "Hook Load":126.3, "Differential Pressure":23.3, "Inclination":2.8, "Total Mud Volume":385.9, "Gamma at Bit":-999.25, "Bit RPM":156, "Line Wear":133, "Block Height":106.6, "Min Pressure":2588, "Min Hook Load":126, "Min Torque":1, "Min RPM":28, "Min WOB":0.6, actual_rop: 100.12 },
-  { label:"Sample 3 · ROP 100.26 ft/hr", "Rotary Torque":1.644, "Rotary RPM":29, "Standpipe Pressure":2599, "Weight on Bit":1.1, "Hook Load":126.5, "Differential Pressure":16.1, "Inclination":2.8, "Total Mud Volume":385.7, "Gamma at Bit":-999.25, "Bit RPM":156, "Line Wear":133, "Block Height":105.6, "Min Pressure":2573, "Min Hook Load":126, "Min Torque":1, "Min RPM":28, "Min WOB":0.5, actual_rop: 100.26 },
-  { label:"Sample 4 · ROP 126.82 ft/hr", "Rotary Torque":1.389, "Rotary RPM":29, "Standpipe Pressure":2591, "Weight on Bit":1.2, "Hook Load":126.4, "Differential Pressure":8.6, "Inclination":2.8, "Total Mud Volume":385.4, "Gamma at Bit":-999.25, "Bit RPM":156, "Line Wear":133, "Block Height":104.6, "Min Pressure":2563, "Min Hook Load":126, "Min Torque":1, "Min RPM":28, "Min WOB":0.5, actual_rop: 126.82 },
-  { label:"Sample 5 · High ROP 149.11 ft/hr", "Rotary Torque":1.528, "Rotary RPM":29, "Standpipe Pressure":2607, "Weight on Bit":1.1, "Hook Load":126.4, "Differential Pressure":23.9, "Inclination":2.8, "Total Mud Volume":385.6, "Gamma at Bit":-999.25, "Bit RPM":156, "Line Wear":133, "Block Height":103.6, "Min Pressure":2588, "Min Hook Load":126, "Min Torque":1, "Min RPM":28, "Min WOB":0.6, actual_rop: 149.11 }
-];
-
-let MEDIANS = {};
 let featureNames = [
   "Rotary Torque", "Rotary RPM", "Standpipe Pressure", "Weight on Bit", "Hook Load", 
   "Differential Pressure", "Inclination", "Total Mud Volume", "Gamma at Bit", "Bit RPM", 
   "Line Wear", "Block Height", "Min Pressure", "Min Hook Load", "Min Torque", "Min RPM", "Min WOB"
 ];
+
+let SAMPLE_DATA = [
+  { label:"Sample 1 · ROP 97.87 ft/hr", "Rotary Torque":1.637, "Rotary RPM":29.0, "Standpipe Pressure":2600.0, "Weight on Bit":1.1, "Hook Load":126.6, "Differential Pressure":17.9, "Inclination":2.8, "Total Mud Volume":385.8, "Gamma at Bit":-999.25, "Bit RPM":156.0, "Line Wear":133.0, "Block Height":107.8, "Min Pressure":2578.0, "Min Hook Load":126.0, "Min Torque":1.0, "Min RPM":28.0, "Min WOB":0.3, actual_rop: 97.87 },
+  { label:"Sample 2 · ROP 100.12 ft/hr", "Rotary Torque":1.996, "Rotary RPM":29.0, "Standpipe Pressure":2606.0, "Weight on Bit":1.3, "Hook Load":126.3, "Differential Pressure":23.3, "Inclination":2.8, "Total Mud Volume":385.9, "Gamma at Bit":-999.25, "Bit RPM":156.0, "Line Wear":133.0, "Block Height":106.6, "Min Pressure":2588.0, "Min Hook Load":126.0, "Min Torque":1.0, "Min RPM":28.0, "Min WOB":0.6, actual_rop: 100.12 },
+  { label:"Sample 3 · ROP 100.26 ft/hr", "Rotary Torque":1.644, "Rotary RPM":29.0, "Standpipe Pressure":2599.0, "Weight on Bit":1.1, "Hook Load":126.5, "Differential Pressure":16.1, "Inclination":2.8, "Total Mud Volume":385.7, "Gamma at Bit":-999.25, "Bit RPM":156.0, "Line Wear":133.0, "Block Height":105.6, "Min Pressure":2573.0, "Min Hook Load":126.0, "Min Torque":1.0, "Min RPM":28.0, "Min WOB":0.5, actual_rop: 100.26 },
+  { label:"Sample 4 · ROP 126.82 ft/hr", "Rotary Torque":1.389, "Rotary RPM":29.0, "Standpipe Pressure":2591.0, "Weight on Bit":1.2, "Hook Load":126.4, "Differential Pressure":8.6, "Inclination":2.8, "Total Mud Volume":385.4, "Gamma at Bit":-999.25, "Bit RPM":156.0, "Line Wear":133.0, "Block Height":104.6, "Min Pressure":2563.0, "Min Hook Load":126.0, "Min Torque":1.0, "Min RPM":28.0, "Min WOB":0.5, actual_rop: 126.82 },
+  { label:"Sample 5 · High ROP 149.11 ft/hr", "Rotary Torque":1.528, "Rotary RPM":29.0, "Standpipe Pressure":2607.0, "Weight on Bit":1.1, "Hook Load":126.4, "Differential Pressure":23.9, "Inclination":2.8, "Total Mud Volume":385.6, "Gamma at Bit":-999.25, "Bit RPM":156.0, "Line Wear":133.0, "Block Height":103.6, "Min Pressure":2588.0, "Min Hook Load":126.0, "Min Torque":1.0, "Min RPM":28.0, "Min WOB":0.6, actual_rop: 149.11 }
+];
+
+let MEDIANS = {
+  "Rotary Torque": 1.6, "Rotary RPM": 29.0, "Standpipe Pressure": 2600.0, "Weight on Bit": 1.1,
+  "Hook Load": 126.4, "Differential Pressure": 18.0, "Inclination": 2.8, "Total Mud Volume": 385.6,
+  "Gamma at Bit": -999.25, "Bit RPM": 156.0, "Line Wear": 133.0, "Block Height": 105.0,
+  "Min Pressure": 2575.0, "Min Hook Load": 126.0, "Min Torque": 1.0, "Min RPM": 28.0, "Min WOB": 0.5
+};
+
 let currentSampleActual = null;
 let currentSampleObject = null;
 
@@ -1168,11 +1049,13 @@ async function loadArtifactJSONs() {
 }
 
 function getVal(id) { return parseFloat(document.getElementById(id).value) || 0; }
+
 function syncInput(id, rid) {
   const v = document.getElementById(rid).value;
   document.getElementById(id).value = v;
   document.getElementById('rv_' + id).textContent = parseFloat(v).toLocaleString();
 }
+
 function syncRange(id, rid) {
   const v = document.getElementById(id).value;
   document.getElementById(rid).value = v;
@@ -1184,15 +1067,17 @@ function loadSample(i) {
   const s = SAMPLE_DATA[i];
   currentSampleObject = s;
   
-  // Ambil 7 parameter utama untuk diisi ke UI Form Slider
+  // Clean feature matching helper
+  const getF = (key) => s[key] ?? s[key.replace(/ /g, '_')] ?? MEDIANS[key] ?? 0;
+
   const formMap = {
-    'wob': s['Weight on Bit'] ?? s['Weight_on_Bit'] ?? 1.1,
-    'rpm': s['Rotary RPM'] ?? s['Rotary_RPM'] ?? 29,
-    'torque': s['Rotary Torque'] ?? s['Rotary_Torque'] ?? 1.5,
-    'spp': s['Standpipe Pressure'] ?? s['Standpipe_Pressure'] ?? 2600,
-    'dp': s['Differential Pressure'] ?? s['Differential_Pressure'] ?? 20,
-    'bitrpm': s['Bit RPM'] ?? s['Bit_RPM'] ?? 156,
-    'depth': s['Hole Depth'] ?? s['Hole_Depth'] ?? 5000
+    'wob': getF('Weight on Bit'),
+    'rpm': getF('Rotary RPM'),
+    'torque': getF('Rotary Torque'),
+    'spp': getF('Standpipe Pressure'),
+    'dp': getF('Differential Pressure'),
+    'bitrpm': getF('Bit RPM'),
+    'depth': 8000
   };
 
   Object.keys(formMap).forEach(f => {
@@ -1208,9 +1093,56 @@ function loadSample(i) {
 
   currentSampleActual = s.actual_rop;
   updateRig();
-  
-  // OTOMATIS JALANKAN INFERENSI SETELAH TOMBOL DIKLIK
   runInference();
+}
+
+// ──────────────────────────────────────────
+//  ONNX INFERENCE ENGINE (PRECISE 17-FEATURE MAPPER)
+// ──────────────────────────────────────────
+let onnxReady = false, onnxSession = null, useSimulation = false;
+
+function setStatus(type, text) {
+  const el = document.getElementById('onnxStatus');
+  if (el) {
+    el.className = 'onnx-status ' + type;
+    document.getElementById('onnxStatusText').textContent = text;
+  }
+  
+  const navDot = document.getElementById('navStatusDot');
+  const navText = document.getElementById('navStatusText');
+  if (navDot) {
+    navDot.className = 'status-dot ' + (type === 'ready' ? 'active' : type === 'fallback' ? 'error' : 'loading');
+  }
+  if (navText) navText.textContent = type === 'ready' ? 'ONNX Siap' : type === 'fallback' ? 'Simulasi' : 'Memuat…';
+}
+
+async function initONNX() {
+  try {
+    setStatus('loading', 'Memuat ONNX Runtime…');
+    await loadArtifactJSONs();
+    await loadScript('https://cdn.jsdelivr.net/npm/onnxruntime-web@1.17.1/dist/ort.min.js');
+    ort.env.wasm.numThreads = 1;
+    
+    setStatus('loading', 'Memuat model rop_final_rf.onnx…');
+    const resp = await fetch('/rop_final_rf.onnx');
+    if (!resp.ok) throw new Error('Model file not found in /public');
+    const buf = await resp.arrayBuffer();
+    onnxSession = await ort.InferenceSession.create(buf, { executionProviders: ['wasm'] });
+    onnxReady = true;
+    setStatus('ready', 'ONNX Runtime Siap (WASM)');
+  } catch(e) {
+    console.warn('ONNX fallback:', e.message);
+    useSimulation = true;
+    setStatus('fallback', 'Mode Simulasi (ONNX Offline)');
+  }
+}
+
+function loadScript(src) {
+  return new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = src; s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
+  });
 }
 
 async function runInference() {
@@ -1223,30 +1155,34 @@ async function runInference() {
   
   const formVals = {
     'wob': getVal('wob'), 'rpm': getVal('rpm'), 'torque': getVal('torque'),
-    'spp': getVal('spp'), 'dp': getVal('dp'), 'bitrpm': getVal('bitrpm'), 'depth': getVal('depth')
+    'spp': getVal('spp'), 'dp': getVal('dp'), 'bitrpm': getVal('bitrpm')
   };
 
   let rop;
 
   if (onnxReady && onnxSession) {
     try {
-      // Susun ARRAY 17 FITUR DARI JSON SECARA EKSPLESIT
+      // PROCESSED 17-FEATURE ARRAY IN EXACT ORDER
       let inputVals = featureNames.map(fn => {
+        // Priority 1: Pick exact value if sample button was clicked
         if (currentSampleObject && currentSampleObject[fn] !== undefined) {
           return parseFloat(currentSampleObject[fn]);
         }
-        if (fn === 'Weight on Bit' || fn === 'Weight_on_Bit') return formVals.wob;
-        if (fn === 'Rotary RPM' || fn === 'Rotary_RPM') return formVals.rpm;
-        if (fn === 'Rotary Torque' || fn === 'Rotary_Torque') return formVals.torque;
-        if (fn === 'Standpipe Pressure' || fn === 'Standpipe_Pressure') return formVals.spp;
-        if (fn === 'Differential Pressure' || fn === 'Differential_Pressure') return formVals.dp;
-        if (fn === 'Bit RPM' || fn === 'Bit_RPM') return formVals.bitrpm;
-        if (fn === 'Hole Depth' || fn === 'Hole_Depth') return formVals.depth;
+        
+        // Priority 2: Map from 6 Form Sliders (Hole Depth is excluded from 17-feature model)
+        const cleanFn = fn.replace(/_/g, ' ').toLowerCase();
+        if (cleanFn.includes('weight on bit')) return formVals.wob;
+        if (cleanFn === 'rotary rpm') return formVals.rpm;
+        if (cleanFn === 'rotary torque') return formVals.torque;
+        if (cleanFn.includes('standpipe pressure')) return formVals.spp;
+        if (cleanFn.includes('differential pressure')) return formVals.dp;
+        if (cleanFn === 'bit rpm') return formVals.bitrpm;
 
-        return MEDIANS[fn] !== undefined ? parseFloat(MEDIANS[fn]) : 0.0;
+        // Priority 3: Fill other features (Hook Load, Mud Volume, etc) from Median JSON
+        return MEDIANS[fn] !== undefined ? parseFloat(MEDIANS[fn]) : (MEDIANS[fn.replace(/ /g, '_')] ?? 0.0);
       });
 
-      const tensor = new ort.Tensor('float32', Float32Array.from(inputVals), [1, inputVals.length]);
+      const tensor = new ort.Tensor('float32', Float32Array.from(inputVals), [1, 17]);
       const feeds = {};
       feeds[onnxSession.inputNames[0]] = tensor;
       const results = await onnxSession.run(feeds);
@@ -1266,7 +1202,7 @@ async function runInference() {
   const latency = (performance.now() - t0).toFixed(2);
   showResult(rop, latency);
   updateRig();
-  currentSampleObject = null; // Reset sampel setelah dijalankan
+  currentSampleObject = null;
 
   if (btn) {
     btn.disabled = false;
@@ -1274,8 +1210,42 @@ async function runInference() {
   }
 }
 
+function showResult(rop, latency) {
+  const card = document.getElementById('resultCard');
+  card.classList.remove('optimal','moderate','slow','idle');
+  document.getElementById('resultROP').textContent = rop.toFixed(1);
+  const statusEl = document.getElementById('resultStatus');
+  const msgEl = document.getElementById('resultMsg');
+
+  if (rop > 120) {
+    card.classList.add('optimal');
+    statusEl.innerHTML = `<span style="width:8px;height:8px;border-radius:50%;background:#16a34a;display:inline-block;"></span> OPTIMAL DRILLING`;
+    msgEl.textContent = 'Pengeboran Sangat Efisien (R² = 0.9993). Pertahankan parameter bor.';
+  } else if (rop >= 60) {
+    card.classList.add('moderate');
+    statusEl.innerHTML = `<span style="width:8px;height:8px;border-radius:50%;background:#ca8a04;display:inline-block;"></span> MODERATE DRILLING`;
+    msgEl.textContent = 'Laju Penetrasi Sedang. Evaluasi Energi Spesifik Pengeboran (MSE).';
+  } else {
+    card.classList.add('slow');
+    statusEl.innerHTML = `<span style="width:8px;height:8px;border-radius:50%;background:#dc2626;display:inline-block;"></span> SLOW DRILLING — CRITICAL`;
+    msgEl.textContent = 'Pengeboran Lambat! Naikkan WOB / Periksa Potensi Keausan Mata Bor.';
+  }
+
+  const actualEl = document.getElementById('resultActual');
+  if (currentSampleActual !== null) {
+    actualEl.style.display = 'block';
+    const err = Math.abs(rop - currentSampleActual).toFixed(2);
+    actualEl.innerHTML = `ROP Aktual CSV 1: <strong>${currentSampleActual.toFixed(1)} ft/hr</strong> &nbsp;|&nbsp; Error Prediksi: <strong>${err} ft/hr</strong>`;
+    currentSampleActual = null;
+  } else {
+    actualEl.style.display = 'none';
+  }
+
+  document.getElementById('latencyBadge').textContent = `⏱ ${latency} ms · ${useSimulation ? 'Mode Simulasi' : 'ONNX WASM'}`;
+}
+
 // ──────────────────────────────────────────
-//  DRILLING RIG ANIMATION ENGINE
+//  RIG ANIMATION ENGINE
 // ──────────────────────────────────────────
 let rigAnimFrame = null;
 let bitAngle = 0;
@@ -1336,157 +1306,12 @@ function buildFormationLayers() {
       <rect x="0" y="232" width="320" height="20" fill="#6D4C41"/>
       <rect x="0" y="252" width="320" height="20" fill="#5D4037"/>
       <rect x="0" y="272" width="320" height="20" fill="#4E342E"/>
-
       <rect id="boreholeChannel" x="152" y="192" width="16" height="200" fill="#1A1A2E" opacity="0.85" rx="1"/>
     </g>
   `;
 
   const bitGroup = svg.querySelector('#drillBitGroup');
   if (bitGroup) bitGroup.insertAdjacentHTML('beforebegin', formationHTML);
-}
-
-// ──────────────────────────────────────────
-//  ONNX INFERENCE ENGINE (EXACT 17-FEATURE ARRAY BUILDER)
-// ──────────────────────────────────────────
-let onnxReady = false, onnxSession = null, useSimulation = false;
-
-function setStatus(type, text) {
-  const el = document.getElementById('onnxStatus');
-  if (el) {
-    el.className = 'onnx-status ' + type;
-    document.getElementById('onnxStatusText').textContent = text;
-  }
-  
-  const navDot = document.getElementById('navStatusDot');
-  const navText = document.getElementById('navStatusText');
-  if (navDot) {
-    navDot.className = 'status-dot ' + (type === 'ready' ? 'active' : type === 'fallback' ? 'error' : 'loading');
-  }
-  if (navText) navText.textContent = type === 'ready' ? 'ONNX Siap' : type === 'fallback' ? 'Simulasi' : 'Memuat…';
-}
-
-async function initONNX() {
-  try {
-    setStatus('loading', 'Memuat ONNX Runtime…');
-    await loadArtifactJSONs();
-    await loadScript('https://cdn.jsdelivr.net/npm/onnxruntime-web@1.17.1/dist/ort.min.js');
-    ort.env.wasm.numThreads = 1;
-    
-    setStatus('loading', 'Memuat model rop_final_rf.onnx…');
-    const resp = await fetch('/rop_final_rf.onnx');
-    if (!resp.ok) throw new Error('Model file not found in /public');
-    const buf = await resp.arrayBuffer();
-    onnxSession = await ort.InferenceSession.create(buf, { executionProviders: ['wasm'] });
-    onnxReady = true;
-    setStatus('ready', 'ONNX Runtime Siap (WASM)');
-  } catch(e) {
-    console.warn('ONNX fallback:', e.message);
-    useSimulation = true;
-    setStatus('fallback', 'Mode Simulasi (ONNX Offline)');
-  }
-}
-
-function loadScript(src) {
-  return new Promise((res, rej) => {
-    const s = document.createElement('script');
-    s.src = src; s.onload = res; s.onerror = rej;
-    document.head.appendChild(s);
-  });
-}
-
-async function runInference() {
-  const btn = document.querySelector('.btn-primary[onclick="runInference()"]');
-  if (btn) {
-    btn.disabled = true;
-    btn.innerHTML = `Memproses…`;
-  }
-  const t0 = performance.now();
-  
-  const formVals = {
-    'wob': getVal('wob'), 'rpm': getVal('rpm'), 'torque': getVal('torque'),
-    'spp': getVal('spp'), 'dp': getVal('dp'), 'bitrpm': getVal('bitrpm'), 'depth': getVal('depth')
-  };
-
-  let rop;
-
-  if (onnxReady && onnxSession) {
-    try {
-      // Susun ARRAY 17 FITUR DARI JSON SECARA EKSPLESIT
-      let inputVals = featureNames.map(fn => {
-        if (currentSampleObject && currentSampleObject[fn] !== undefined) {
-          return parseFloat(currentSampleObject[fn]);
-        }
-        if (fn === 'Weight on Bit' || fn === 'Weight_on_Bit') return formVals.wob;
-        if (fn === 'Rotary RPM' || fn === 'Rotary_RPM') return formVals.rpm;
-        if (fn === 'Rotary Torque' || fn === 'Rotary_Torque') return formVals.torque;
-        if (fn === 'Standpipe Pressure' || fn === 'Standpipe_Pressure') return formVals.spp;
-        if (fn === 'Differential Pressure' || fn === 'Differential_Pressure') return formVals.dp;
-        if (fn === 'Bit RPM' || fn === 'Bit_RPM') return formVals.bitrpm;
-        if (fn === 'Hole Depth' || fn === 'Hole_Depth') return formVals.depth;
-
-        return MEDIANS[fn] !== undefined ? parseFloat(MEDIANS[fn]) : 0.0;
-      });
-
-      const tensor = new ort.Tensor('float32', Float32Array.from(inputVals), [1, inputVals.length]);
-      const feeds = {};
-      feeds[onnxSession.inputNames[0]] = tensor;
-      const results = await onnxSession.run(feeds);
-      
-      const outputTensor = results[onnxSession.outputNames[0]];
-      rop = Array.isArray(outputTensor.data) ? outputTensor.data[0] : outputTensor.data[0];
-
-    } catch(e) { 
-      console.error("❌ ONNX Execution Error:", e);
-      rop = currentSampleActual || 100.0;
-    }
-  } else {
-    await new Promise(r => setTimeout(r, 150));
-    rop = currentSampleActual || 100.0;
-  }
-
-  const latency = (performance.now() - t0).toFixed(2);
-  showResult(rop, latency);
-  updateRig();
-  currentSampleObject = null; // Reset sampel setelah dijalankan
-
-  if (btn) {
-    btn.disabled = false;
-    btn.innerHTML = `⚡ Jalankan Prediksi ROP`;
-  }
-}
-
-function showResult(rop, latency) {
-  const card = document.getElementById('resultCard');
-  card.classList.remove('optimal','moderate','slow','idle');
-  document.getElementById('resultROP').textContent = rop.toFixed(1);
-  const statusEl = document.getElementById('resultStatus');
-  const msgEl = document.getElementById('resultMsg');
-
-  if (rop > 120) {
-    card.classList.add('optimal');
-    statusEl.innerHTML = `<span style="width:8px;height:8px;border-radius:50%;background:#16a34a;display:inline-block;"></span> OPTIMAL DRILLING`;
-    msgEl.textContent = 'Pengeboran Sangat Efisien (R² = 0.9993). Pertahankan parameter bor.';
-  } else if (rop >= 60) {
-    card.classList.add('moderate');
-    statusEl.innerHTML = `<span style="width:8px;height:8px;border-radius:50%;background:#ca8a04;display:inline-block;"></span> MODERATE DRILLING`;
-    msgEl.textContent = 'Laju Penetrasi Sedang. Evaluasi Energi Spesifik Pengeboran (MSE).';
-  } else {
-    card.classList.add('slow');
-    statusEl.innerHTML = `<span style="width:8px;height:8px;border-radius:50%;background:#dc2626;display:inline-block;"></span> SLOW DRILLING — CRITICAL`;
-    msgEl.textContent = 'Pengeboran Lambat! Naikkan WOB / Periksa Potensi Keausan Mata Bor.';
-  }
-
-  const actualEl = document.getElementById('resultActual');
-  if (currentSampleActual !== null) {
-    actualEl.style.display = 'block';
-    const err = Math.abs(rop - currentSampleActual).toFixed(2);
-    actualEl.innerHTML = `ROP Aktual CSV 1: <strong>${currentSampleActual.toFixed(1)} ft/hr</strong> &nbsp;|&nbsp; Error Prediksi: <strong>${err} ft/hr</strong>`;
-    currentSampleActual = null;
-  } else {
-    actualEl.style.display = 'none';
-  }
-
-  document.getElementById('latencyBadge').textContent = `⏱ ${latency} ms · ${useSimulation ? 'Mode Simulasi' : 'ONNX WASM'}`;
 }
 
 // ──────────────────────────────────────────
@@ -1504,8 +1329,6 @@ function initCharts() {
 
   chartsInited = true;
 
-  const depthData = SAMPLE_DATA.map(s => ({ x: s['Hole Depth'] || s['Hole_Depth'] || 5000, y: s.actual_rop || 100 })).sort((a,b)=>a.x-b.x);
-  
   new Chart(cDepth, {
     type:'line',
     data:{
