@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DrillSense — ROP Prediction | Edge AI</title>
-<!-- ONNX Runtime tidak dipakai, model berjalan via JSON RF -->
+<!-- Inferensi Random Forest berjalan di browser dari artifact JSON -->
 <style>
   :root {
     --blue: #1565C0;
@@ -429,7 +429,7 @@
 <div id="section-inference" class="section">
   <div class="sec-header">
     <h2>⛏️ Prediksi ROP — In-Browser Inference</h2>
-    <p>Masukkan parameter rig atau gunakan tombol sample data. Model berjalan langsung di browser via ONNX Runtime Web.</p>
+    <p>Masukkan parameter rig atau gunakan tombol sample data. Model Random Forest berjalan langsung di browser dari artifact JSON.</p>
   </div>
 
   <div id="onnxStatus" class="onnx-status loading">
@@ -624,7 +624,7 @@
 
 <footer>
   <p>DrillSense · Prediksi ROP Berbasis Edge AI · Kasus 11 Industri Migas</p>
-  <p style="margin-top:4px;">Dibangun dengan ONNX Runtime Web (WASM) · Deployed on Vercel</p>
+  <p style="margin-top:4px;">Random Forest JSON inference · Deployed on Vercel</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
@@ -656,73 +656,7 @@ const FEATURE_LABELS = {
   Min_Hook_Load: ["Minimum Hook Load", "unit sesuai dataset"], Min_Torque: ["Minimum Torque", "unit sesuai dataset"],
   Min_RPM: ["Minimum RPM", "rpm"], Min_WOB: ["Minimum WOB", "klbf"]
 };
-const SAMPLE_DATA = [
-  {
-    label: "Kasus 1 · Soft Formation – ROP Sangat Tinggi",
-    predicted_rop: 339.61,
-    values: {
-      Rotary_Torque:6.5, Rotary_RPM:100, Standpipe_Pressure:2900, Weight_on_Bit:18.0,
-      Hook_Load:124.0, Differential_Pressure:390, Inclination:36.0, Time_Of_Penetration:0.18,
-      Total_Mud_Volume:380, Gamma_at_Bit:140.0, Bit_Depth:4500, Bit_RPM:149,
-      Line_Wear:840, Block_Height:59.0, Min_Pressure:2660, Min_Hook_Load:122.0,
-      Min_Torque:4.0, Min_RPM:19, Min_WOB:15.0
-    }
-  },
-  {
-    label: "Kasus 2 · Normal Drilling – ROP Sedang",
-    predicted_rop: 177.06,
-    values: {
-      Rotary_Torque:10.5, Rotary_RPM:80, Standpipe_Pressure:3184, Weight_on_Bit:26.4,
-      Hook_Load:127.7, Differential_Pressure:562, Inclination:90.1, Time_Of_Penetration:0.34,
-      Total_Mud_Volume:402, Gamma_at_Bit:278.0, Bit_Depth:8440, Bit_RPM:208,
-      Line_Wear:879, Block_Height:81.4, Min_Pressure:3129, Min_Hook_Load:126.0,
-      Min_Torque:8.0, Min_RPM:74, Min_WOB:24.7
-    }
-  },
-  {
-    label: "Kasus 3 · Hard Formation – ROP Rendah",
-    predicted_rop: 50.00,
-    values: {
-      Rotary_Torque:15.0, Rotary_RPM:20, Standpipe_Pressure:3600, Weight_on_Bit:30.0,
-      Hook_Load:137.0, Differential_Pressure:700, Inclination:90.5, Time_Of_Penetration:1.20,
-      Total_Mud_Volume:440, Gamma_at_Bit:360.0, Bit_Depth:11000, Bit_RPM:149,
-      Line_Wear:920, Block_Height:110.0, Min_Pressure:3400, Min_Hook_Load:133.0,
-      Min_Torque:12.0, Min_RPM:19, Min_WOB:29.0
-    }
-  },
-  {
-    label: "Kasus 4 · High RPM – ROP Tinggi",
-    predicted_rop: 231.41,
-    values: {
-      Rotary_Torque:8.0, Rotary_RPM:121, Standpipe_Pressure:3000, Weight_on_Bit:20.0,
-      Hook_Load:125.0, Differential_Pressure:420, Inclination:45.0, Time_Of_Penetration:0.26,
-      Total_Mud_Volume:390, Gamma_at_Bit:150.0, Bit_Depth:6000, Bit_RPM:229,
-      Line_Wear:850, Block_Height:70.0, Min_Pressure:2800, Min_Hook_Load:123.0,
-      Min_Torque:5.0, Min_RPM:99, Min_WOB:18.0
-    }
-  },
-  {
-    label: "Kasus 5 · Deep Well – ROP Sangat Rendah",
-    predicted_rop: 23.60,
-    values: {
-      Rotary_Torque:17.0, Rotary_RPM:20, Standpipe_Pressure:3800, Weight_on_Bit:35.0,
-      Hook_Load:150.0, Differential_Pressure:850, Inclination:91.0, Time_Of_Penetration:2.50,
-      Total_Mud_Volume:470, Gamma_at_Bit:400.0, Bit_Depth:12000, Bit_RPM:100,
-      Line_Wear:2000, Block_Height:130.0, Min_Pressure:3750, Min_Hook_Load:145.0,
-      Min_Torque:14.0, Min_RPM:19, Min_WOB:32.0
-    }
-  }
-];
-
-function loadSample(idx) {
-  const s = SAMPLE_DATA[idx];
-  if (!s) return;
-  setFeatureValues(s.values);
-  document.getElementById('inputHelp').textContent =
-    `✅ ${s.label} — Prediksi model: ${s.predicted_rop} ft/hr. Klik "Jalankan Prediksi" untuk verifikasi.`;
-  document.getElementById('inputHelp').style.background = '#E3F2FD';
-  updateRig();
-}
+// Sample data akan dimuat dari artifact jika tersedia; tidak menggunakan angka simulasi.
 let MEDIANS = null;
 let featureNames = [...FEATURE_NAMES];
 let SAMPLE_DATA = [];
@@ -851,7 +785,7 @@ function animateRig(rop) {
   setTimeout(() => { if (rafId) cancelAnimationFrame(rafId); isDrilling = false; }, 3000);
 }
 
-// ONNX INFERENCE — tidak ada fallback ke prediksi simulasi.
+// Random Forest JSON inference — tidak ada fallback ke prediksi simulasi.
 let onnxSession = null;
 let onnxReady = false;
 let useSimulation = false;
@@ -873,17 +807,19 @@ function predictRF(values) {
   
 }
 async function initONNX() {
-  setStatus('loading', 'Memuat model…');
+  setStatus('loading', 'Memuat artifact Random Forest JSON…');
   try {
     renderFeatureInputs();
     await loadArtifactJSONs();
 
     const resp = await fetch('/rop_rf_model.json', { cache: 'no-store' });
-    if (!resp.ok) throw new Error('File /rop_rf_model.json tidak ditemukan (' + resp.status + ')');
+    if (!resp.ok) throw new Error('File /rop_rf_model.json tidak ditemukan (' + resp.status + '). Unggah artifact JSON hasil ekspor Random Forest ke root repository.');
     rfModel = await resp.json();
 
     onnxReady = true;
-    setStatus('ready', `Model RF Siap · ${rfModel.n_estimators} pohon · ${rfModel.n_features} fitur`);
+    if (!Array.isArray(rfModel.trees) || rfModel.trees.length === 0) throw new Error('Format rop_rf_model.json tidak memiliki array trees yang valid.');
+    if (Number(rfModel.n_features) !== FEATURE_NAMES.length) throw new Error(`Artifact memiliki ${rfModel.n_features} fitur, GUI memerlukan ${FEATURE_NAMES.length}.`);
+    setStatus('ready', `Model RF Siap · ${rfModel.trees.length} pohon · ${FEATURE_NAMES.length} fitur`);
   } catch (e) {
     onnxReady = false;
     console.error('Model load failed:', e);
@@ -981,7 +917,7 @@ function showResult(rop, latency) {
 
   actualEl.style.display = 'none';
 
-  latEl.textContent = `⏱ Latency: ${latency} ms · Random Forest JSON (50 pohon)`;
+  latEl.textContent = `⏱ Latency: ${latency} ms · Random Forest JSON (${rfModel.trees.length} pohon)`;
 }
 
 // CHARTS — angka metrik berasal dari output notebook, bukan dihitung dari sampel buatan.
