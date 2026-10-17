@@ -4,492 +4,338 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DrillSense — ROP Prediction | Edge AI</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-:root {
-  --color-primary: #1E40AF;
-  --color-primary-dark: #1E3A8A;
-  --color-secondary: #3B82F6;
-  --color-accent: #D97706;
-  --color-accent-light: #FEF3C7;
-  --color-green: #15803D;
-  --color-green-light: #DCFCE7;
-  --color-red: #B91C1C;
-  --color-red-light: #FEE2E2;
-  --color-yellow: #B45309;
-  --color-yellow-light: #FEF9C3;
-  --color-bg: #F0F4FB;
-  --color-card: #FFFFFF;
-  --color-border: #DBEAFE;
-  --color-muted: #E9EEF6;
-  --color-text: #1E293B;
-  --color-text-muted: #475569;
-  --color-text-faint: #94A3B8;
-  --font-display: 'Fira Sans', system-ui, sans-serif;
-  --font-mono: 'Fira Code', 'Courier New', monospace;
-  --radius: 14px;
-  --radius-sm: 8px;
-  --radius-xs: 5px;
-  --shadow: 0 1px 4px rgba(30,64,175,0.06), 0 4px 16px rgba(30,64,175,0.08);
-  --shadow-lg: 0 4px 24px rgba(30,64,175,0.14), 0 12px 48px rgba(30,64,175,0.10);
-  --transition: 200ms cubic-bezier(0.4,0,0.2,1);
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth;font-size:16px}
-body{
-  font-family:var(--font-display);
-  background:var(--color-bg);
-  color:var(--color-text);
-  line-height:1.6;
-  min-height:100vh;
-}
+  :root {
+    --blue: #1565C0;
+    --blue-light: #1976D2;
+    --blue-pale: #E3F2FD;
+    --blue-mid: #BBDEFB;
+    --orange: #E65100;
+    --orange-light: #FF6D00;
+    --green: #2E7D32;
+    --green-light: #43A047;
+    --yellow: #F57F17;
+    --red: #C62828;
+    --white: #FFFFFF;
+    --bg: #F5F7FA;
+    --card: #FFFFFF;
+    --border: #E0E7EF;
+    --text: #1A2332;
+    --text-muted: #5A6A7E;
+    --shadow: 0 2px 12px rgba(21,101,192,0.08);
+    --shadow-lg: 0 8px 32px rgba(21,101,192,0.13);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
 
-body::before{
-  content:'';
-  position:fixed;inset:0;
-  background-image:
-    linear-gradient(rgba(30,64,175,0.04) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(30,64,175,0.04) 1px,transparent 1px);
-  background-size:32px 32px;
-  pointer-events:none;z-index:0;
-}
+  /* NAV */
+  nav {
+    background: var(--white);
+    border-bottom: 2px solid var(--blue-pale);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(21,101,192,0.07);
+  }
+  .nav-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 700; font-size: 1.2rem; color: var(--blue);
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--orange); }
+  .nav-links { display: flex; gap: 0.25rem; }
+  .nav-links a {
+    padding: 6px 14px; border-radius: 6px;
+    color: var(--text-muted); font-size: 0.9rem; text-decoration: none;
+    font-weight: 500; transition: all 0.15s;
+  }
+  .nav-links a:hover, .nav-links a.active {
+    background: var(--blue-pale); color: var(--blue);
+  }
 
-nav{
-  background:rgba(255,255,255,0.92);
-  backdrop-filter:blur(12px);
-  -webkit-backdrop-filter:blur(12px);
-  border-bottom:1px solid var(--color-border);
-  padding:0 2rem;
-  display:flex;align-items:center;justify-content:space-between;
-  height:58px;
-  position:sticky;top:0;z-index:200;
-  box-shadow:0 1px 8px rgba(30,64,175,0.07);
-}
-.nav-logo{
-  display:flex;align-items:center;gap:10px;
-  font-weight:800;font-size:1.15rem;color:var(--color-primary);
-  text-decoration:none;letter-spacing:-0.02em;
-}
-.nav-logo .logo-icon{
-  width:30px;height:30px;
-  background:var(--color-primary);
-  border-radius:7px;
-  display:flex;align-items:center;justify-content:center;
-}
-.nav-logo .logo-icon svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2;}
-.nav-logo .accent{color:var(--color-accent);}
-.nav-links{display:flex;gap:2px;}
-.nav-links a{
-  padding:7px 14px;border-radius:7px;
-  color:var(--color-text-muted);font-size:0.875rem;text-decoration:none;
-  font-weight:500;transition:all var(--transition);border:1px solid transparent;
-}
-.nav-links a:hover{background:var(--color-muted);color:var(--color-primary);}
-.nav-links a.active{
-  background:var(--color-primary);color:#fff;
-  border-color:var(--color-primary);
-}
-.nav-status{
-  display:flex;align-items:center;gap:6px;
-  font-size:0.75rem;font-family:var(--font-mono);
-  color:var(--color-text-muted);
-  background:var(--color-muted);
-  padding:4px 10px;border-radius:20px;
-}
-.status-dot{
-  width:7px;height:7px;border-radius:50%;
-  background:#22c55e;
-  box-shadow:0 0 0 3px rgba(34,197,94,0.25);
-}
-@keyframes pulse-dot{
-  0%,100%{box-shadow:0 0 0 3px rgba(34,197,94,0.25);}
-  50%{box-shadow:0 0 0 6px rgba(34,197,94,0.12);}
-}
-.status-dot.active{animation:pulse-dot 2s infinite;}
-.status-dot.loading{background:#D97706;box-shadow:0 0 0 3px rgba(217,119,6,0.25);}
-.status-dot.error{background:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,0.25);}
+  /* SECTIONS */
+  .section { display: none; padding: 2rem; max-width: 1200px; margin: 0 auto; }
+  .section.active { display: block; }
 
-.section{display:none;padding:2rem;max-width:1200px;margin:0 auto;position:relative;z-index:1;}
-.section.active{display:block;}
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, var(--blue) 0%, #0D47A1 100%);
+    color: white;
+    padding: 3rem 2rem;
+    border-radius: var(--radius);
+    margin-bottom: 2rem;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 2rem;
+    align-items: center;
+  }
+  .hero h1 { font-size: 2.2rem; font-weight: 800; line-height: 1.2; margin-bottom: 0.75rem; }
+  .hero h1 span { color: #FFB74D; }
+  .hero p { font-size: 1rem; opacity: 0.88; max-width: 520px; }
+  .hero-badges { display: flex; gap: 0.5rem; margin-top: 1.25rem; flex-wrap: wrap; }
+  .badge {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 600;
+  }
+  .rig-icon { font-size: 5rem; opacity: 0.25; user-select: none; }
 
-.sec-header{margin-bottom:1.75rem;}
-.sec-eyebrow{
-  font-size:0.72rem;font-family:var(--font-mono);
-  font-weight:600;letter-spacing:0.08em;
-  color:var(--color-accent);text-transform:uppercase;
-  margin-bottom:0.4rem;display:block;
-}
-.sec-header h2{
-  font-size:1.75rem;font-weight:800;
-  color:var(--color-primary-dark);letter-spacing:-0.03em;line-height:1.2;
-}
-.sec-header p{
-  font-size:0.9rem;color:var(--color-text-muted);margin-top:0.4rem;max-width:560px;
-}
+  /* PILLARS */
+  .pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
+  .pillar-card {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-top: 4px solid var(--blue);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    box-shadow: var(--shadow);
+  }
+  .pillar-card:nth-child(2) { border-top-color: var(--orange); }
+  .pillar-card:nth-child(3) { border-top-color: var(--green); }
+  .pillar-icon { font-size: 1.8rem; margin-bottom: 0.5rem; }
+  .pillar-card h3 { font-size: 0.95rem; font-weight: 700; color: var(--blue); margin-bottom: 0.4rem; }
+  .pillar-card:nth-child(2) h3 { color: var(--orange); }
+  .pillar-card:nth-child(3) h3 { color: var(--green); }
+  .pillar-card p { font-size: 0.83rem; color: var(--text-muted); }
 
-.hero{
-  background:linear-gradient(135deg,#1E3A8A 0%,#1E40AF 55%,#2563EB 100%);
-  color:#fff;
-  padding:3rem 2.5rem;
-  border-radius:var(--radius);
-  margin-bottom:1.75rem;
-  position:relative;overflow:hidden;
-  box-shadow:var(--shadow-lg);
-}
-.hero::before{
-  content:'';position:absolute;inset:0;
-  background:
-    radial-gradient(circle at 80% 50%, rgba(59,130,246,0.25) 0%, transparent 60%),
-    radial-gradient(circle at 10% 80%, rgba(217,119,6,0.15) 0%, transparent 50%);
-  pointer-events:none;
-}
-.hero-inner{display:grid;grid-template-columns:1fr auto;gap:2rem;align-items:center;position:relative;}
-.hero-eyebrow{
-  font-size:0.7rem;font-family:var(--font-mono);
-  letter-spacing:0.1em;opacity:0.65;text-transform:uppercase;
-  margin-bottom:0.75rem;
-}
-.hero h1{font-size:2.4rem;font-weight:800;line-height:1.15;letter-spacing:-0.03em;margin-bottom:0.85rem;}
-.hero h1 em{font-style:normal;color:#FCD34D;}
-.hero-desc{font-size:0.95rem;opacity:0.85;max-width:500px;line-height:1.65;}
-.hero-badges{display:flex;gap:0.5rem;margin-top:1.25rem;flex-wrap:wrap;}
-.badge{
-  background:rgba(255,255,255,0.12);
-  border:1px solid rgba(255,255,255,0.22);
-  color:#fff;padding:4px 12px;border-radius:20px;
-  font-size:0.75rem;font-weight:600;font-family:var(--font-mono);
-}
-.hero-rig-wrap{
-  width:140px;height:180px;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-}
+  /* TEAM */
+  .team-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; }
+  .team-card {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1rem;
+    text-align: center;
+    box-shadow: var(--shadow);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .team-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+  .team-photo {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: var(--blue-pale);
+    border: 3px solid var(--blue-mid);
+    margin: 0 auto 0.75rem;
+    object-fit: cover;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; overflow: hidden;
+  }
+  .team-photo img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+  .team-name { font-size: 0.88rem; font-weight: 700; color: var(--text); margin-bottom: 0.2rem; }
+  .team-nim { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.3rem; }
+  .team-role {
+    display: inline-block;
+    background: var(--blue-pale); color: var(--blue);
+    font-size: 0.72rem; font-weight: 600;
+    padding: 2px 8px; border-radius: 10px; margin-bottom: 0.75rem;
+  }
+  .btn-linkedin {
+    display: block; width: 100%;
+    background: #0A66C2; color: white;
+    border: none; border-radius: 6px; padding: 6px;
+    font-size: 0.78rem; font-weight: 600; cursor: pointer;
+    text-decoration: none; transition: background 0.15s;
+  }
+  .btn-linkedin:hover { background: #004499; }
 
-.stat-grid{
-  display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;
-  margin-bottom:1.75rem;
-}
-.stat-card{
-  background:var(--color-card);
-  border:1px solid var(--color-border);
-  border-radius:var(--radius);
-  padding:1.25rem 1rem;
-  box-shadow:var(--shadow);
-  position:relative;overflow:hidden;
-  transition:transform var(--transition),box-shadow var(--transition);
-}
-.stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);}
-.stat-card::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:3px;
-  background:var(--color-primary);border-radius:3px 3px 0 0;
-}
-.stat-card.accent::before{background:var(--color-accent);}
-.stat-card.green::before{background:var(--color-green);}
-.stat-card.secondary::before{background:var(--color-secondary);}
-.stat-val{
-  font-size:1.9rem;font-weight:800;font-family:var(--font-mono);
-  color:var(--color-primary);line-height:1.1;letter-spacing:-0.03em;
-}
-.stat-card.accent .stat-val{color:var(--color-accent);}
-.stat-card.green .stat-val{color:var(--color-green);}
-.stat-lbl{font-size:0.75rem;color:var(--color-text-muted);font-weight:600;margin-top:4px;}
+  /* INFERENCE SECTION */
+  .inference-layout {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
 
-.pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.75rem;}
-.pillar{
-  background:var(--color-card);
-  border:1px solid var(--color-border);
-  border-radius:var(--radius);
-  padding:1.5rem;
-  box-shadow:var(--shadow);
-  display:flex;gap:1rem;
-  transition:transform var(--transition),box-shadow var(--transition);
-}
-.pillar:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);}
-.pillar-icon-wrap{
-  width:44px;height:44px;flex-shrink:0;
-  border-radius:10px;
-  display:flex;align-items:center;justify-content:center;
-}
-.pillar-icon-wrap.blue{background:#DBEAFE;}
-.pillar-icon-wrap.orange{background:#FEF3C7;}
-.pillar-icon-wrap.green{background:#DCFCE7;}
-.pillar-icon-wrap svg{width:22px;height:22px;}
-.pillar-text h3{font-size:0.9rem;font-weight:700;color:var(--color-text);margin-bottom:0.3rem;}
-.pillar-text p{font-size:0.8rem;color:var(--color-text-muted);line-height:1.55;}
+  /* FORM */
+  .card {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+  }
+  .card-title {
+    font-size: 1rem; font-weight: 700; color: var(--blue);
+    border-bottom: 2px solid var(--blue-pale);
+    padding-bottom: 0.6rem; margin-bottom: 1.25rem;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .form-group { margin-bottom: 1rem; }
+  .form-label {
+    display: block; font-size: 0.8rem; font-weight: 600;
+    color: var(--text-muted); margin-bottom: 4px;
+  }
+  .form-label span { font-weight: 400; color: #9AA5B4; }
+  .form-input {
+    width: 100%; padding: 8px 10px;
+    border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    font-size: 0.9rem; color: var(--text);
+    transition: border-color 0.15s;
+    background: #FAFBFC;
+  }
+  .form-input:focus { outline: none; border-color: var(--blue); background: white; }
+  .range-row { display: flex; align-items: center; gap: 8px; }
+  .form-range {
+    flex: 1; accent-color: var(--blue);
+    height: 4px; cursor: pointer;
+  }
+  .range-val {
+    min-width: 52px; text-align: right;
+    font-size: 0.82rem; font-weight: 700; color: var(--blue);
+  }
 
-.cta-card{
-  background:linear-gradient(135deg,#EFF6FF,#DBEAFE);
-  border:1.5px solid var(--color-border);
-  border-radius:var(--radius);
-  padding:2.5rem;text-align:center;
-  box-shadow:var(--shadow);
-}
-.cta-card p{font-size:0.95rem;color:var(--color-text-muted);margin-bottom:1rem;}
 
-.btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:8px;
-  padding:10px 22px;border-radius:var(--radius-sm);
-  font-size:0.9rem;font-weight:700;cursor:pointer;
-  border:none;transition:all var(--transition);
-}
-.btn-primary{
-  background:var(--color-primary);color:#fff;
-  box-shadow:0 2px 8px rgba(30,64,175,0.3);
-}
-.btn-primary:hover{background:var(--color-primary-dark);box-shadow:0 4px 16px rgba(30,64,175,0.4);transform:translateY(-1px);}
-.btn-primary:active{transform:translateY(0);}
-.btn-ghost{
-  background:transparent;color:var(--color-primary);
-  border:1.5px solid var(--color-border);
-}
-.btn-ghost:hover{background:var(--color-muted);}
-.btn-block{width:100%;}
-.btn-sm{padding:7px 14px;font-size:0.82rem;}
+  .feature-inputs { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0.75rem; }
+  .feature-input { min-width:0; }
+  .feature-input .form-label { min-height:2.2em; }
+  .feature-input .form-input { background:#fff; }
+  @media (max-width:600px) { .feature-inputs { grid-template-columns:1fr; } }
 
-.inference-layout{display:grid;grid-template-columns:340px 1fr;gap:1.5rem;align-items:start;}
+  /* SAMPLE BUTTONS */
+  .sample-btns { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
+  .btn-sample {
+    width: 100%; padding: 9px 12px;
+    background: var(--blue-pale); color: var(--blue);
+    border: 1.5px solid var(--blue-mid); border-radius: 8px;
+    font-size: 0.82rem; font-weight: 600; cursor: pointer;
+    text-align: left; transition: all 0.15s;
+  }
+  .btn-sample:hover { background: var(--blue-mid); }
+  .btn-predict {
+    width: 100%; padding: 12px;
+    background: var(--blue); color: white;
+    border: none; border-radius: 8px;
+    font-size: 0.95rem; font-weight: 700; cursor: pointer;
+    transition: background 0.15s;
+    margin-top: 0.5rem;
+  }
+  .btn-predict:hover { background: var(--blue-light); }
 
-.card{
-  background:var(--color-card);
-  border:1px solid var(--color-border);
-  border-radius:var(--radius);
-  padding:1.5rem;
-  box-shadow:var(--shadow);
-}
-.card+.card{margin-top:1rem;}
-.card-header{
-  display:flex;align-items:center;gap:0.6rem;
-  margin-bottom:1.25rem;padding-bottom:0.75rem;
-  border-bottom:1.5px solid var(--color-muted);
-}
-.card-header h3{font-size:0.9rem;font-weight:700;color:var(--color-primary);flex:1;}
-.card-icon{
-  width:28px;height:28px;border-radius:6px;
-  background:var(--color-muted);
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;
-}
-.card-icon svg{width:15px;height:15px;stroke:var(--color-primary);fill:none;stroke-width:2;}
+  /* RIG VISUALIZER */
+  .rig-container { display: flex; flex-direction: column; gap: 1rem; }
+  .rig-canvas-wrap {
+    background: linear-gradient(180deg, #E8F4FD 0%, #B3D9F5 100%);
+    border: 2px solid var(--blue-mid);
+    border-radius: var(--radius);
+    height: 280px; overflow: hidden; position: relative;
+  }
+  #rigSVG { width: 100%; height: 100%; }
 
-.form-group{margin-bottom:0.9rem;}
-.form-label{
-  display:flex;align-items:baseline;gap:4px;
-  font-size:0.78rem;font-weight:700;
-  color:var(--color-text);margin-bottom:5px;
-}
-.form-label-unit{color:var(--color-text-faint);font-weight:400;font-size:0.72rem;font-family:var(--font-mono);}
-.range-row{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
-.form-range{
-  flex:1;-webkit-appearance:none;height:4px;
-  background:var(--color-muted);border-radius:4px;cursor:pointer;
-  accent-color:var(--color-primary);
-}
-.form-range::-webkit-slider-thumb{
-  -webkit-appearance:none;width:16px;height:16px;
-  border-radius:50%;background:var(--color-primary);
-  box-shadow:0 1px 4px rgba(30,64,175,0.3);
-  cursor:pointer;transition:transform var(--transition);
-}
-.form-range::-webkit-slider-thumb:hover{transform:scale(1.2);}
-.range-val{
-  min-width:52px;text-align:right;
-  font-size:0.8rem;font-weight:700;color:var(--color-primary);
-  font-family:var(--font-mono);
-}
-.form-input{
-  width:100%;padding:7px 10px;
-  border:1.5px solid var(--color-border);border-radius:var(--radius-xs);
-  font-size:0.87rem;color:var(--color-text);
-  background:#FAFBFD;transition:border-color var(--transition);
-  font-family:var(--font-mono);
-}
-.form-input:focus{outline:none;border-color:var(--color-primary);background:#fff;box-shadow:0 0 0 3px rgba(30,64,175,0.1);}
+  /* RESULT CARD */
+  .result-card {
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    border: 2.5px solid;
+    text-align: center;
+    transition: all 0.3s;
+  }
+  .result-card.optimal { background: #F0FDF4; border-color: var(--green); }
+  .result-card.moderate { background: #FFFDE7; border-color: var(--yellow); }
+  .result-card.slow { background: #FFF3F3; border-color: var(--red); }
+  .result-card.idle { background: var(--white); border-color: var(--border); }
+  .result-rop {
+    font-size: 3.2rem; font-weight: 900; letter-spacing: -1px;
+    line-height: 1; margin: 0.25rem 0;
+  }
+  .result-card.optimal .result-rop { color: var(--green); }
+  .result-card.moderate .result-rop { color: var(--yellow); }
+  .result-card.slow .result-rop { color: var(--red); }
+  .result-card.idle .result-rop { color: var(--text-muted); }
+  .result-unit { font-size: 1rem; color: var(--text-muted); font-weight: 600; }
+  .result-status {
+    display: inline-block; padding: 4px 14px;
+    border-radius: 20px; font-size: 0.82rem; font-weight: 700;
+    margin: 0.5rem 0;
+  }
+  .result-card.optimal .result-status { background: var(--green); color: white; }
+  .result-card.moderate .result-status { background: var(--yellow); color: white; }
+  .result-card.slow .result-status { background: var(--red); color: white; }
+  .result-card.idle .result-status { background: #CBD5E0; color: white; }
+  .result-msg { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem; }
+  .result-actual {
+    font-size: 0.8rem; color: var(--text-muted);
+    background: var(--bg); border-radius: 6px; padding: 6px 10px;
+    margin-top: 0.75rem; display: none;
+  }
 
-.sample-btns{display:flex;flex-direction:column;gap:0.4rem;}
-.btn-sample{
-  width:100%;padding:8px 12px;
-  background:#FAFBFD;color:var(--color-text-muted);
-  border:1.5px solid var(--color-border);border-radius:var(--radius-xs);
-  font-size:0.8rem;font-weight:600;cursor:pointer;
-  text-align:left;transition:all var(--transition);
-  display:flex;align-items:center;gap:8px;
-}
-.btn-sample:hover{background:var(--color-muted);border-color:var(--color-primary);color:var(--color-primary);}
-.sample-dot{
-  width:8px;height:8px;border-radius:50%;flex-shrink:0;background:var(--color-secondary);
-}
+  /* METRICS ROW */
+  .metrics-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+  .metric-card {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius); padding: 1rem;
+    text-align: center; box-shadow: var(--shadow);
+  }
+  .metric-val { font-size: 1.6rem; font-weight: 800; color: var(--blue); }
+  .metric-lbl { font-size: 0.76rem; color: var(--text-muted); font-weight: 600; margin-top: 2px; }
 
-.rig-canvas-wrap{
-  background:linear-gradient(180deg,#E8F4FD 0%,#C9E2F8 60%,#D4B483 100%);
-  border:2px solid var(--color-border);
-  border-radius:var(--radius);
-  overflow:hidden;position:relative;
-  height:300px;
-}
-#rigSVG{width:100%;height:100%;}
+  /* CHARTS */
+  .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  .chart-wrap { position: relative; height: 280px; }
 
-.result-card{
-  border-radius:var(--radius);
-  padding:1.5rem;border:2px solid;
-  transition:all 0.4s cubic-bezier(0.4,0,0.2,1);
-  position:relative;overflow:hidden;
-}
-.result-card::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:4px;
-  background:currentColor;opacity:0.5;
-}
-.result-card.idle{background:var(--color-card);border-color:var(--color-border);color:var(--color-text-muted);}
-.result-card.optimal{background:var(--color-green-light);border-color:#16a34a;color:#166534;}
-.result-card.moderate{background:var(--color-yellow-light);border-color:#ca8a04;color:#713f12;}
-.result-card.slow{background:var(--color-red-light);border-color:#dc2626;color:#7f1d1d;}
-.result-label{font-size:0.7rem;font-weight:700;letter-spacing:0.08em;opacity:0.65;margin-bottom:0.2rem;font-family:var(--font-mono);}
-.result-rop{
-  font-size:3.5rem;font-weight:800;font-family:var(--font-mono);
-  line-height:1;letter-spacing:-0.04em;
-}
-.result-card.idle .result-rop{color:var(--color-text-muted);}
-.result-card.optimal .result-rop{color:#15803D;}
-.result-card.moderate .result-rop{color:#B45309;}
-.result-card.slow .result-rop{color:#B91C1C;}
-.result-unit{font-size:0.9rem;font-weight:600;opacity:0.7;margin-bottom:0.6rem;}
-.result-status{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:4px 14px;border-radius:20px;
-  font-size:0.78rem;font-weight:700;font-family:var(--font-mono);
-  margin-bottom:0.5rem;
-}
-.result-card.idle .result-status{background:rgba(0,0,0,0.07);color:var(--color-text-muted);}
-.result-card.optimal .result-status{background:#16a34a;color:#fff;}
-.result-card.moderate .result-status{background:#ca8a04;color:#fff;}
-.result-card.slow .result-status{background:#dc2626;color:#fff;}
-.result-msg{font-size:0.82rem;opacity:0.8;line-height:1.5;}
-.result-actual{
-  font-size:0.78rem;font-family:var(--font-mono);
-  background:rgba(0,0,0,0.04);border-radius:6px;
-  padding:6px 10px;margin-top:0.75rem;display:none;
-}
-.latency-badge{
-  margin-top:0.75rem;font-size:0.72rem;
-  font-family:var(--font-mono);color:var(--color-text-faint);
-}
+  /* ONNX STATUS */
+  .onnx-status {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 0.78rem; font-weight: 600; padding: 4px 10px;
+    border-radius: 20px; margin-bottom: 0.75rem;
+  }
+  .onnx-status.loading { background: #FFF8E1; color: var(--yellow); }
+  .onnx-status.ready { background: #E8F5E9; color: var(--green); }
+  .onnx-status.error { background: #FFEBEE; color: var(--red); }
+  .onnx-status.fallback { background: #E8F4FD; color: var(--blue); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+  .dot.pulse { animation: pulse 1.2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-.onnx-status{
-  display:inline-flex;align-items:center;gap:7px;
-  font-size:0.76rem;font-family:var(--font-mono);font-weight:600;
-  padding:5px 12px;border-radius:20px;margin-bottom:1rem;
-}
-.onnx-status.loading{background:#FEF3C7;color:#92400E;}
-.onnx-status.ready{background:#DCFCE7;color:#15803D;}
-.onnx-status.fallback{background:#FEE2E2;color:#B91C1C;}
+  /* SECTION HEADER */
+  .sec-header { margin-bottom: 1.5rem; }
+  .sec-header h2 { font-size: 1.5rem; font-weight: 800; color: var(--text); }
+  .sec-header p { font-size: 0.88rem; color: var(--text-muted); margin-top: 0.25rem; }
 
-.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;}
-.chart-wrap{position:relative;height:260px;}
+  /* FOOTER */
+  footer {
+    text-align: center; padding: 2rem;
+    color: var(--text-muted); font-size: 0.82rem;
+    border-top: 1px solid var(--border); margin-top: 3rem;
+  }
 
-.perf-table{width:100%;border-collapse:collapse;font-size:0.84rem;margin-top:1rem;}
-.perf-table thead tr{background:var(--color-primary);color:#fff;}
-.perf-table th{padding:9px 14px;text-align:left;font-weight:700;font-size:0.8rem;}
-.perf-table th:first-child{border-radius:7px 0 0 7px;}
-.perf-table th:last-child{border-radius:0 7px 7px 0;}
-.perf-table td{padding:9px 14px;border-bottom:1px solid var(--color-muted);}
-.perf-table tbody tr:last-child td{border-bottom:none;}
-.perf-table tbody tr.winner{background:#F0FDF4;}
-.perf-table tbody tr:hover{background:var(--color-muted);}
-.perf-pill{
-  display:inline-block;padding:2px 10px;border-radius:10px;
-  font-size:0.72rem;font-weight:700;
-}
-.perf-pill.win{background:var(--color-green);color:#fff;}
-.perf-pill.other{background:var(--color-muted);color:var(--color-text-muted);}
-
-.team-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;}
-.team-card{
-  background:var(--color-card);
-  border:1px solid var(--color-border);
-  border-radius:var(--radius);
-  padding:1.5rem 1rem;text-align:center;
-  box-shadow:var(--shadow);
-  transition:transform var(--transition),box-shadow var(--transition);
-}
-.team-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);}
-.team-avatar{
-  width:76px;height:76px;border-radius:50%;
-  background:linear-gradient(135deg,var(--color-muted),#DBEAFE);
-  border:3px solid var(--color-border);
-  margin:0 auto 0.75rem;
-  display:flex;align-items:center;justify-content:center;
-  font-size:1.6rem;overflow:hidden;position:relative;
-}
-.team-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
-.team-name{font-size:0.84rem;font-weight:700;color:var(--color-text);margin-bottom:2px;}
-.team-nim{font-size:0.7rem;color:var(--color-text-faint);font-family:var(--font-mono);margin-bottom:5px;}
-.team-role{
-  display:inline-block;
-  background:var(--color-muted);color:var(--color-primary);
-  font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-bottom:0.75rem;
-}
-.btn-linkedin{
-  display:block;width:100%;
-  background:#0A66C2;color:#fff;
-  border:none;border-radius:6px;padding:7px;
-  font-size:0.76rem;font-weight:700;cursor:pointer;
-  text-decoration:none;transition:background var(--transition);
-}
-.btn-linkedin:hover{background:#004499;}
-
-.ai-contrib{
-  background:linear-gradient(135deg,#EFF6FF,#DBEAFE);
-  border:1px solid var(--color-border);
-  border-radius:var(--radius);
-  padding:1.75rem;margin-top:1.5rem;
-}
-.ai-contrib-header{
-  font-size:0.9rem;font-weight:800;color:var(--color-primary);
-  margin-bottom:1.25rem;display:flex;align-items:center;gap:8px;
-}
-.ai-contrib-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
-.ai-item h4{font-size:0.85rem;font-weight:700;margin-bottom:0.3rem;}
-.ai-item p{font-size:0.8rem;color:var(--color-text-muted);line-height:1.5;}
-.ai-item.blue h4{color:var(--color-primary);}
-.ai-item.orange h4{color:var(--color-accent);}
-.ai-item.green h4{color:var(--color-green);}
-
-footer{
-  text-align:center;padding:2rem;
-  font-size:0.8rem;color:var(--color-text-faint);
-  font-family:var(--font-mono);
-  border-top:1px solid var(--color-border);
-  margin-top:2rem;position:relative;z-index:1;
-}
-footer span{color:var(--color-primary);font-weight:600;}
-
-@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-
-@media(max-width:960px){
-  .inference-layout{grid-template-columns:1fr;}
-  .stat-grid{grid-template-columns:repeat(2,1fr);}
-  .charts-grid{grid-template-columns:1fr;}
-  .team-grid{grid-template-columns:repeat(3,1fr);}
-}
-@media(max-width:640px){
-  nav{padding:0 1rem;}
-  .section{padding:1rem;}
-  .hero-inner{grid-template-columns:1fr;}
-  .hero-rig-wrap{display:none;}
-  .hero h1{font-size:1.8rem;}
-  .pillars{grid-template-columns:1fr;}
-  .stat-grid{grid-template-columns:repeat(2,1fr);}
-  .team-grid{grid-template-columns:repeat(2,1fr);}
-  .ai-contrib-grid{grid-template-columns:1fr;}
-}
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .team-grid { grid-template-columns: repeat(3, 1fr); }
+    .pillars { grid-template-columns: 1fr; }
+    .inference-layout { grid-template-columns: 1fr; }
+    .metrics-row { grid-template-columns: repeat(2, 1fr); }
+    .charts-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    nav { padding: 0 1rem; }
+    .section { padding: 1rem; }
+    .hero { grid-template-columns: 1fr; }
+    .rig-icon { display: none; }
+    .hero h1 { font-size: 1.6rem; }
+    .team-grid { grid-template-columns: repeat(2, 1fr); }
+  }
 </style>
 </head>
 <body>
 
 <nav>
   <a href="#" class="nav-logo" onclick="showSection('home')">
-    <div class="logo-icon">
-      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-    </div>
-    Drill<span class="accent">Sense</span>
+    ⛏️ Drill<span>Sense</span>
   </a>
   <div class="nav-links">
     <a href="#" class="active" id="nav-home" onclick="showSection('home')">Beranda</a>
@@ -497,129 +343,66 @@ footer span{color:var(--color-primary);font-weight:600;}
     <a href="#" id="nav-analytics" onclick="showSection('analytics')">Analitik</a>
     <a href="#" id="nav-team" onclick="showSection('team')">Tim</a>
   </div>
-  <div class="nav-status">
-    <div class="status-dot loading" id="navStatusDot"></div>
-    <span id="navStatusText">Memuat…</span>
-  </div>
 </nav>
 
 <!-- ======================== HOME ======================== -->
 <div id="section-home" class="section active">
   <div class="hero">
-    <div class="hero-inner">
-      <div>
-        <div class="hero-eyebrow">Kasus 11 · Edge AI Industri Migas · UPNVJT</div>
-        <h1>Prediksi <em>Rate of Penetration</em><br>Secara Real-Time</h1>
-        <p class="hero-desc">Model Random Forest (R² = 0.9993) berjalan langsung di browser Anda menggunakan ONNX Runtime Web — tanpa server, tanpa latensi jaringan.</p>
-        <div class="hero-badges">
-          <span class="badge">⚡ In-Browser WASM</span>
-          <span class="badge">R² = 0.9993</span>
-          <span class="badge">&lt;5ms Latency</span>
-          <span class="badge">🛢️ Industri Migas</span>
-        </div>
-        <button class="btn btn-primary" style="margin-top:1.5rem;" onclick="showSection('inference')">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
-          Mulai Prediksi ROP
-        </button>
-      </div>
-      <div class="hero-rig-wrap">
-        <svg id="heroRigSVG" viewBox="0 0 120 170" xmlns="http://www.w3.org/2000/svg">
-          <line x1="40" y1="10" x2="60" y2="130" stroke="rgba(255,255,255,0.4)" stroke-width="2.5"/>
-          <line x1="80" y1="10" x2="60" y2="130" stroke="rgba(255,255,255,0.4)" stroke-width="2.5"/>
-          <line x1="40" y1="10" x2="80" y2="10" stroke="rgba(255,255,255,0.4)" stroke-width="2.5"/>
-          <line x1="43" y1="40" x2="77" y2="40" stroke="rgba(255,255,255,0.2)" stroke-width="1.2"/>
-          <line x1="46" y1="70" x2="74" y2="70" stroke="rgba(255,255,255,0.2)" stroke-width="1.2"/>
-          <line x1="49" y1="100" x2="71" y2="100" stroke="rgba(255,255,255,0.2)" stroke-width="1.2"/>
-          <circle cx="60" cy="12" r="6" fill="#FCD34D" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
-          <g id="hookGroup">
-            <rect x="53" y="60" width="14" height="8" rx="3" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
-          </g>
-          <rect id="heroPipe" x="57" y="20" width="6" height="110" fill="url(#heroPipeGrad)" rx="2"/>
-          <rect x="55" y="118" width="10" height="14" fill="rgba(255,255,255,0.35)" rx="2"/>
-          <g id="heroBitGroup">
-            <polygon points="60,130 52,145 68,145" fill="#F59E0B"/>
-            <rect x="56" y="130" width="8" height="4" fill="#FCD34D" rx="1"/>
-            <g id="heroTeeth">
-              <rect x="54" y="143" width="4" height="5" fill="#B45309" rx="1"/>
-              <rect x="62" y="143" width="4" height="5" fill="#B45309" rx="1"/>
-            </g>
-            <circle cx="60" cy="136" r="3.5" fill="rgba(255,255,255,0.3)"/>
-            <line id="heroRpmLine" x1="60" y1="136" x2="63" y2="134" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-          </g>
-          <rect x="0" y="148" width="120" height="22" fill="rgba(180,120,40,0.25)" rx="2"/>
-          <text x="60" y="165" font-size="7" fill="rgba(255,255,255,0.7)" text-anchor="middle" font-family="'Fira Code',monospace">ROP: <tspan id="heroRopText">—</tspan> ft/hr</text>
-          <defs>
-            <linearGradient id="heroPipeGrad" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stop-color="rgba(255,255,255,0.15)"/>
-              <stop offset="50%" stop-color="rgba(255,255,255,0.5)"/>
-              <stop offset="100%" stop-color="rgba(255,255,255,0.15)"/>
-            </linearGradient>
-          </defs>
-        </svg>
+    <div>
+      <p style="font-size:0.8rem;opacity:0.7;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:0.5rem;">Kasus 11 · Edge AI Industri Migas</p>
+      <h1>Prediksi <span>Rate of Penetration</span> Secara Real-Time</h1>
+      <p>Model Random Forest (R² = 0.999367) berjalan langsung di browser Anda menggunakan ONNX Runtime Web — tanpa server, tanpa latensi jaringan.</p>
+      <div class="hero-badges">
+        <span class="badge">⚡ In-Browser WASM</span>
+        <span class="badge">🎯 R² = 0.999367</span>
+        <span class="badge">⏱ &lt;5ms Latency</span>
+        <span class="badge">🛢️ Industri Migas</span>
       </div>
     </div>
-  </div>
-
-  <div class="stat-grid">
-    <div class="stat-card green">
-      <div class="stat-val">0.9993</div>
-      <div class="stat-lbl">R² Score · External Test CSV 1</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-val">1.057</div>
-      <div class="stat-lbl">MAE (ft/hr)</div>
-    </div>
-    <div class="stat-card accent">
-      <div class="stat-val">&lt;5ms</div>
-      <div class="stat-lbl">Latensi Inferensi WASM</div>
-    </div>
-    <div class="stat-card secondary">
-      <div class="stat-val" id="numFeaturesBadge">17</div>
-      <div class="stat-lbl">Parameter Input Fitur</div>
-    </div>
+    <div class="rig-icon">🏗️</div>
   </div>
 
   <div class="pillars">
-    <div class="pillar">
-      <div class="pillar-icon-wrap blue">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#1E40AF" stroke-width="2">
-          <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
-        </svg>
-      </div>
-      <div class="pillar-text">
-        <h3>Optimasi Produksi</h3>
-        <p>Prediksi ROP akurat memungkinkan operator menentukan parameter bor optimal sehingga laju penetrasi maksimal dapat dicapai secara konsisten.</p>
-      </div>
+    <div class="pillar-card">
+      <div class="pillar-icon">⚙️</div>
+      <h3>Optimasi Produksi</h3>
+      <p>Prediksi ROP dapat membantu analisis parameter pengeboran, tetapi bukan optimasi parameter otomatis yang telah tervalidasi.</p>
     </div>
-    <div class="pillar">
-      <div class="pillar-icon-wrap orange">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2">
-          <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-        </svg>
-      </div>
-      <div class="pillar-text">
-        <h3>Efisiensi Biaya OPEX</h3>
-        <p>Reduksi waktu pengeboran non-produktif (NPT) dan umur pakai mata bor yang lebih panjang berdampak langsung pada penghematan biaya operasional.</p>
-      </div>
+    <div class="pillar-card">
+      <div class="pillar-icon">💰</div>
+      <h3>Efisiensi Biaya OPEX</h3>
+      <p>Reduksi waktu pengeboran non-produktif (NPT) dan umur pakai mata bor yang lebih panjang berdampak langsung pada penghematan biaya operasional rig.</p>
     </div>
-    <div class="pillar">
-      <div class="pillar-icon-wrap green">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#15803D" stroke-width="2">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-        </svg>
-      </div>
-      <div class="pillar-text">
-        <h3>Keselamatan Operasional</h3>
-        <p>Deteksi dini kondisi pengeboran kritis (sticking, bit balling) melalui monitoring parameter real-time berbasis AI meningkatkan keamanan personel rig.</p>
-      </div>
+    <div class="pillar-card">
+      <div class="pillar-icon">🛡️</div>
+      <h3>Keselamatan Operasional</h3>
+      <p>Deteksi dini kondisi pengeboran kritis (sticking, bit balling) melalui monitoring parameter real-time berbasis AI tidak menggantikan prosedur keselamatan dan validasi operator.</p>
     </div>
   </div>
 
-  <div class="cta-card">
-    <p>Siap mencoba prediksi ROP secara langsung di browser Anda?</p>
-    <button class="btn btn-primary" onclick="showSection('inference')">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-      Jalankan Inferensi Sekarang
+  <div class="metrics-row" style="margin-bottom:2rem;">
+    <div class="metric-card">
+      <div class="metric-val" style="color:var(--green)">0.999367</div>
+      <div class="metric-lbl">R² Score (External Test CSV 1)</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val">1.025</div>
+      <div class="metric-lbl">MAE (ft/hr)</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val" style="color:var(--orange)">Lokal</div>
+      <div class="metric-lbl">Latensi Inferensi</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val" id="numFeaturesBadge">19</div>
+      <div class="metric-lbl">Parameter Input Fitur</div>
+    </div>
+  </div>
+
+  <div class="card" style="text-align:center;padding:2rem;">
+    <p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:1rem;">Siap mencoba prediksi ROP secara langsung?</p>
+    <button class="btn-predict" style="max-width:300px;margin:0 auto;display:block;" onclick="showSection('inference')">
+      🚀 Mulai Prediksi ROP
     </button>
   </div>
 </div>
@@ -627,13 +410,12 @@ footer span{color:var(--color-primary);font-weight:600;}
 <!-- ======================== INFERENCE ======================== -->
 <div id="section-inference" class="section">
   <div class="sec-header">
-    <span class="sec-eyebrow">Edge AI · ONNX Runtime Web</span>
-    <h2>Prediksi ROP — In-Browser Inference</h2>
+    <h2>⛏️ Prediksi ROP — In-Browser Inference</h2>
     <p>Masukkan parameter rig atau gunakan tombol sample data. Model berjalan langsung di browser via ONNX Runtime Web.</p>
   </div>
 
   <div id="onnxStatus" class="onnx-status loading">
-    <div class="status-dot loading" id="onnxDot"></div>
+    <span class="dot pulse"></span>
     <span id="onnxStatusText">Memuat ONNX Runtime…</span>
   </div>
 
@@ -641,197 +423,79 @@ footer span{color:var(--color-primary);font-weight:600;}
     <!-- FORM -->
     <div>
       <div class="card" style="margin-bottom:1rem;">
-        <div class="card-header">
-          <div class="card-icon">
-            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          </div>
-          <h3>Sample Data Cepat (CSV 1 External Test)</h3>
-        </div>
-        <div class="sample-btns" id="sampleBtnsContainer">
-          <button class="btn-sample" onclick="loadSample(0)">
-            <span class="sample-dot" style="background:#3B82F6;"></span>
-            📌 Sample 1 · ROP 97.87 ft/hr
-          </button>
-          <button class="btn-sample" onclick="loadSample(1)">
-            <span class="sample-dot" style="background:#3B82F6;"></span>
-            📍 Sample 2 · ROP 100.12 ft/hr
-          </button>
-          <button class="btn-sample" onclick="loadSample(2)">
-            <span class="sample-dot" style="background:#3B82F6;"></span>
-            🔩 Sample 3 · ROP 100.26 ft/hr
-          </button>
-          <button class="btn-sample" onclick="loadSample(3)">
-            <span class="sample-dot" style="background:#22c55e;"></span>
-            ⚡ Sample 4 · ROP 126.82 ft/hr
-          </button>
-          <button class="btn-sample" onclick="loadSample(4)">
-            <span class="sample-dot" style="background:#22c55e;"></span>
-            🚀 Sample 5 · High ROP 149.11 ft/hr
-          </button>
-        </div>
+        <div class="card-title">🧾 Data Input Model</div>
+        <p style="font-size:0.83rem;color:var(--text-muted);margin-bottom:0.75rem;">Model final membutuhkan tepat 19 fitur dengan nama dan urutan yang sama seperti notebook. Isi seluruh nilai dari data rig. Input contoh sintetis dan prediksi simulasi tidak digunakan.</p>
+        <div id="inputHelp" style="font-size:0.8rem;padding:0.65rem;background:#FFF8E1;border-radius:6px;color:#795548;">Memeriksa model dan nilai imputasi…</div>
       </div>
-
       <div class="card">
-        <div class="card-header">
-          <div class="card-icon">
-            <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-          </div>
-          <h3>Parameter Rig</h3>
+        <div class="card-title">🔧 19 Fitur Random Forest</div>
+        <div id="featureInputs" class="feature-inputs"></div>
+        <div class="form-group" style="margin-top:1rem;">
+          <label class="form-label">Hole Depth <span>ft · konteks visualisasi, bukan fitur model</span></label>
+          <input type="number" class="form-input" id="depthContext" min="0" step="any" value="" placeholder="Opsional: kedalaman untuk visualisasi rig" oninput="updateRig()">
         </div>
-
-        <div class="form-group">
-          <label class="form-label">Weight on Bit (WOB) <span class="form-label-unit">klbf</span></label>
-          <div class="range-row">
-            <input type="range" class="form-range" id="r_wob" min="0" max="10" step="0.1" value="1.1" oninput="syncInput('wob','r_wob')">
-            <span class="range-val" id="rv_wob">1.1</span>
-          </div>
-          <input type="number" class="form-input" id="wob" value="1.1" step="0.1" oninput="syncRange('wob','r_wob')" placeholder="klbf">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Rotary RPM <span class="form-label-unit">rpm</span></label>
-          <div class="range-row">
-            <input type="range" class="form-range" id="r_rpm" min="0" max="300" step="1" value="29" oninput="syncInput('rpm','r_rpm');updateRig()">
-            <span class="range-val" id="rv_rpm">29</span>
-          </div>
-          <input type="number" class="form-input" id="rpm" value="29" oninput="syncRange('rpm','r_rpm');updateRig()" placeholder="rpm">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Rotary Torque <span class="form-label-unit">kft·lbf</span></label>
-          <div class="range-row">
-            <input type="range" class="form-range" id="r_torque" min="0" max="10" step="0.001" value="1.528" oninput="syncInput('torque','r_torque')">
-            <span class="range-val" id="rv_torque">1.528</span>
-          </div>
-          <input type="number" class="form-input" id="torque" value="1.528" step="0.001" oninput="syncRange('torque','r_torque')" placeholder="kft·lbf">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Standpipe Pressure <span class="form-label-unit">psi</span></label>
-          <div class="range-row">
-            <input type="range" class="form-range" id="r_spp" min="0" max="4000" step="1" value="2607" oninput="syncInput('spp','r_spp')">
-            <span class="range-val" id="rv_spp">2,607</span>
-          </div>
-          <input type="number" class="form-input" id="spp" value="2607" oninput="syncRange('spp','r_spp')" placeholder="psi">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Differential Pressure <span class="form-label-unit">psi</span></label>
-          <div class="range-row">
-            <input type="range" class="form-range" id="r_dp" min="0" max="200" step="0.1" value="23.9" oninput="syncInput('dp','r_dp')">
-            <span class="range-val" id="rv_dp">23.9</span>
-          </div>
-          <input type="number" class="form-input" id="dp" value="23.9" step="0.1" oninput="syncRange('dp','r_dp')" placeholder="psi">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Bit RPM <span class="form-label-unit">rpm</span></label>
-          <div class="range-row">
-            <input type="range" class="form-range" id="r_bitrpm" min="0" max="500" step="1" value="156" oninput="syncInput('bitrpm','r_bitrpm')">
-            <span class="range-val" id="rv_bitrpm">156</span>
-          </div>
-          <input type="number" class="form-input" id="bitrpm" value="156" oninput="syncRange('bitrpm','r_bitrpm')" placeholder="rpm">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Hole Depth <span class="form-label-unit">ft</span></label>
-          <div class="range-row">
-            <input type="range" class="form-range" id="r_depth" min="1000" max="20000" step="100" value="8000" oninput="syncInput('depth','r_depth')">
-            <span class="range-val" id="rv_depth">8,000</span>
-          </div>
-          <input type="number" class="form-input" id="depth" value="8000" oninput="syncRange('depth','r_depth')" placeholder="ft">
-        </div>
-
-        <button class="btn btn-primary btn-block" onclick="runInference()" style="margin-top:0.5rem;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Jalankan Prediksi ROP
-        </button>
+        <button class="btn-predict" id="predictButton" onclick="runInference()">⚡ Jalankan Prediksi ROP</button>
+      </div>
       </div>
     </div>
 
     <!-- RIGHT: VISUALIZER + RESULT -->
-    <div style="display:flex;flex-direction:column;gap:1rem;">
+    <div class="rig-container">
       <div class="card">
-        <div class="card-header">
-          <div class="card-icon">
-            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-          </div>
-          <h3>Drilling Rig Visualizer</h3>
-        </div>
+        <div class="card-title">🏗️ Drilling Rig Visualizer</div>
         <div class="rig-canvas-wrap">
-          <svg id="rigSVG" viewBox="0 0 320 280" xmlns="http://www.w3.org/2000/svg">
+          <svg id="rigSVG" viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
+            <rect x="0" y="0" width="300" height="260" fill="url(#skyGrad)"/>
+            <rect x="0" y="200" width="300" height="60" fill="#8B6914" opacity="0.4"/>
             <defs>
               <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#C5DFF5"/>
-                <stop offset="65%" stop-color="#E8F4FD"/>
-                <stop offset="100%" stop-color="#C8A96E" stop-opacity="0.5"/>
+                <stop offset="0%" stop-color="#B3D9F5"/>
+                <stop offset="70%" stop-color="#E8F4FD"/>
+                <stop offset="100%" stop-color="#C8A96E" stop-opacity="0.3"/>
               </linearGradient>
               <linearGradient id="pipeGrad" x1="0" y1="0" x2="1" y2="0">
                 <stop offset="0%" stop-color="#78909C"/>
-                <stop offset="40%" stop-color="#CFD8DC"/>
-                <stop offset="60%" stop-color="#ECEFF1"/>
+                <stop offset="50%" stop-color="#CFD8DC"/>
                 <stop offset="100%" stop-color="#78909C"/>
               </linearGradient>
-              <filter id="glow">
-                <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-                <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
             </defs>
-
-            <rect x="0" y="0" width="320" height="280" fill="url(#skyGrad)"/>
-            <line x1="0" y1="70" x2="320" y2="70" stroke="rgba(21,101,192,0.05)" stroke-width="1"/>
-            <line x1="0" y1="140" x2="320" y2="140" stroke="rgba(21,101,192,0.05)" stroke-width="1"/>
-
-            <rect x="80" y="185" width="160" height="8" fill="#546E7A" rx="2"/>
-            <line x1="120" y1="20" x2="155" y2="188" stroke="#455A64" stroke-width="3.5" stroke-linecap="round"/>
-            <line x1="200" y1="20" x2="165" y2="188" stroke="#455A64" stroke-width="3.5" stroke-linecap="round"/>
-            <line x1="120" y1="20" x2="200" y2="20" stroke="#455A64" stroke-width="3.5" stroke-linecap="round"/>
-            <line x1="125" y1="58" x2="195" y2="58" stroke="#546E7A" stroke-width="1.8" opacity="0.6"/>
-            <line x1="130" y1="96" x2="190" y2="96" stroke="#546E7A" stroke-width="1.8" opacity="0.6"/>
-            <line x1="135" y1="134" x2="185" y2="134" stroke="#546E7A" stroke-width="1.8" opacity="0.6"/>
-
-            <circle cx="160" cy="22" r="10" fill="#1565C0" filter="url(#glow)"/>
-            <circle cx="160" cy="22" r="6" fill="#42A5F5"/>
-
-            <g id="hookGroup">
-              <rect x="151" y="68" width="18" height="11" rx="4" fill="#37474F" stroke="#546E7A" stroke-width="1"/>
-            </g>
-
-            <rect id="drillPipe" x="154" y="22" width="12" height="168" fill="url(#pipeGrad)" rx="2"/>
-            <rect class="pipe-joint-dyn" x="152" y="65" width="16" height="5" fill="#90A4AE" rx="1" opacity="0.8"/>
-            <rect class="pipe-joint-dyn" x="152" y="110" width="16" height="5" fill="#90A4AE" rx="1" opacity="0.8"/>
-            <rect class="pipe-joint-dyn" x="152" y="155" width="16" height="5" fill="#90A4AE" rx="1" opacity="0.8"/>
-
-            <rect x="150" y="178" width="20" height="12" fill="#37474F" rx="2"/>
-
-            <line x1="40" y1="192" x2="40" y2="280" stroke="#78909C" stroke-width="1.5" opacity="0.7"/>
-            <text id="depthLabel" x="26" y="215" font-size="7" fill="#90A4AE" text-anchor="middle" font-family="'Fira Code',monospace" writing-mode="tb" glyph-orientation-vertical="0">8,000ft</text>
-
-            <rect x="22" y="50" width="10" height="130" fill="rgba(255,255,255,0.2)" rx="3"/>
-            <rect id="wobBar" x="22" y="100" width="10" height="80" fill="#1565C0" rx="3" opacity="0.7"/>
-            <text x="27" y="44" font-size="6.5" fill="#546E7A" text-anchor="middle" font-family="'Fira Code',monospace">WOB</text>
-
-            <g id="drillBitGroup" transform="translate(160,210)">
-              <polygon points="0,-18 -10,0 10,0" fill="#B71C1C"/>
-              <rect x="-5" y="-30" width="10" height="15" fill="url(#pipeGrad)" rx="1.5"/>
-              <g id="rotIndicator">
-                <circle cx="0" cy="-12" r="4" fill="#1565C0" opacity="0.5"/>
-                <line id="rpmLine" x1="0" y1="-12" x2="4" y2="-9" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+            <line x1="100" y1="20" x2="150" y2="200" stroke="#455A64" stroke-width="3"/>
+            <line x1="200" y1="20" x2="150" y2="200" stroke="#455A64" stroke-width="3"/>
+            <line x1="100" y1="20" x2="200" y2="20" stroke="#455A64" stroke-width="3"/>
+            <line x1="108" y1="60" x2="192" y2="60" stroke="#455A64" stroke-width="1.5" opacity="0.5"/>
+            <line x1="116" y1="100" x2="184" y2="100" stroke="#455A64" stroke-width="1.5" opacity="0.5"/>
+            <line x1="124" y1="140" x2="176" y2="140" stroke="#455A64" stroke-width="1.5" opacity="0.5"/>
+            <circle cx="150" cy="22" r="8" fill="#1565C0" stroke="#0D47A1" stroke-width="1.5"/>
+            <rect id="drillPipe" x="144" y="22" width="12" height="0" fill="url(#pipeGrad)" rx="1"/>
+            <rect x="138" y="195" width="24" height="10" fill="#37474F" rx="2"/>
+            <g id="drillBitGroup" transform="translate(150,220)">
+              <rect x="-5" y="-30" width="10" height="30" fill="url(#pipeGrad)" rx="1"/>
+              <polygon points="0,-3 -8,10 8,10" fill="#B71C1C"/>
+              <g id="bitTeeth">
+                <rect x="-4" y="8" width="3" height="5" fill="#D32F2F" rx="1"/>
+                <rect x="1" y="8" width="3" height="5" fill="#D32F2F" rx="1"/>
               </g>
+              <circle cx="0" cy="-15" r="4" fill="#1565C0" opacity="0.6"/>
+              <line id="rpmLine" x1="0" y1="-15" x2="4" y2="-12" stroke="white" stroke-width="1.5"/>
             </g>
-
-            <rect x="80" y="255" width="80" height="18" fill="rgba(21,101,192,0.15)" rx="5"/>
-            <text x="120" y="267" font-size="8" fill="#1565C0" text-anchor="middle" font-family="'Fira Code',monospace" font-weight="bold" id="ropLabel">ROP: — ft/hr</text>
-
-            <rect x="168" y="255" width="72" height="18" fill="rgba(180,83,9,0.12)" rx="5"/>
-            <text x="204" y="267" font-size="8" fill="#B45309" text-anchor="middle" font-family="'Fira Code',monospace" font-weight="bold" id="rpmLabel">RPM: 29</text>
+            <rect x="20" y="50" width="12" height="120" fill="#E0E0E0" rx="3" opacity="0.7"/>
+            <rect id="wobBar" x="20" y="170" width="12" height="0" fill="#1565C0" rx="3"/>
+            <text x="26" y="45" font-size="7" fill="#455A64" text-anchor="middle" font-family="monospace">WOB</text>
+            <text id="depthLabel" x="255" y="205" font-size="8" fill="#455A64" font-family="monospace">5000 ft</text>
+            <text x="150" y="250" font-size="8" fill="#1565C0" text-anchor="middle" font-family="monospace" id="ropLabel">ROP: — ft/hr</text>
           </svg>
         </div>
       </div>
 
-      <!-- RESULT CARD -->
-      <div id="resultCard" class="result-card idle">
-        <div class="result-label">PREDIKSI ROP</div>
+      <!-- RESULT -->
+      <div id="resultCard" class="result-card idle card">
+        <div style="font-size:0.8rem;color:var(--text-muted);font-weight:600;margin-bottom:0.25rem;">PREDIKSI ROP</div>
         <div class="result-rop" id="resultROP">—</div>
-        <div class="result-unit">ft / hr</div>
+        <div class="result-unit">ft/hr</div>
         <div class="result-status" id="resultStatus">Masukkan Parameter</div>
         <div class="result-msg" id="resultMsg">Isi parameter rig lalu klik "Jalankan Prediksi ROP"</div>
         <div class="result-actual" id="resultActual"></div>
-        <div class="latency-badge" id="latencyBadge"></div>
+        <div id="latencyBadge" style="margin-top:0.75rem;font-size:0.75rem;color:var(--text-muted);"></div>
       </div>
     </div>
   </div>
@@ -840,72 +504,62 @@ footer span{color:var(--color-primary);font-weight:600;}
 <!-- ======================== ANALYTICS ======================== -->
 <div id="section-analytics" class="section">
   <div class="sec-header">
-    <span class="sec-eyebrow">Model Performance · Random Forest ONNX</span>
-    <h2>Analitik & Visualisasi</h2>
-    <p>Performa model dan distribusi parameter pengeboran berdasarkan sample data CSV 1 & CSV 2.</p>
+    <h2>📊 Analitik & Visualisasi</h2>
+    <p>Ringkasan metrik dan feature importance yang tercatat pada output notebook.</p>
   </div>
 
-  <div class="charts-grid">
+  <div class="charts-grid" style="margin-bottom:1.5rem;">
     <div class="card">
-      <div class="card-header">
-        <div class="card-icon">
-          <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-        </div>
-        <h3>Depth Profile Curve — ROP vs Depth</h3>
-      </div>
+      <div class="card-title">📈 Evaluasi Error Model</div>
       <div class="chart-wrap"><canvas id="chartDepth"></canvas></div>
     </div>
     <div class="card">
-      <div class="card-header">
-        <div class="card-icon">
-          <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-        </div>
-        <h3>Feature Importance (%)</h3>
-      </div>
+      <div class="card-title">📊 Feature Importance (%)</div>
       <div class="chart-wrap"><canvas id="chartParams"></canvas></div>
     </div>
   </div>
-
   <div class="card">
-    <div class="card-header">
-      <div class="card-icon">
-        <svg viewBox="0 0 24 24"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
-      </div>
-      <h3>Model Performance Showcase — Validation CSV 2</h3>
-    </div>
+    <div class="card-title">🏆 Evaluasi Model — Validation CSV 2 & External Test CSV 1</div>
     <div class="chart-wrap" style="height:220px;"><canvas id="chartPerf"></canvas></div>
-    <div style="margin-top:1.25rem;overflow-x:auto;">
-      <table class="perf-table">
+    <div style="margin-top:1rem;overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
         <thead>
-          <tr>
-            <th>Model</th>
-            <th style="text-align:center;">MAE (ft/hr)</th>
-            <th style="text-align:center;">RMSE (ft/hr)</th>
-            <th style="text-align:center;">R² Score</th>
-            <th style="text-align:center;">Status</th>
+          <tr style="background:var(--blue);color:white;">
+            <th style="padding:8px 12px;text-align:left;border-radius:4px 0 0 4px;">Model</th>
+            <th style="padding:8px 12px;text-align:center;">MAE (ft/hr)</th>
+            <th style="padding:8px 12px;text-align:center;">RMSE (ft/hr)</th>
+            <th style="padding:8px 12px;text-align:center;">R² Score</th>
+            <th style="padding:8px 12px;text-align:center;border-radius:0 4px 4px 0;">Status</th>
           </tr>
         </thead>
         <tbody>
-          <tr class="winner">
-            <td style="font-weight:700;">🥇 Random Forest</td>
-            <td style="text-align:center;font-family:var(--font-mono);">1.8083</td>
-            <td style="text-align:center;font-family:var(--font-mono);">2.4744</td>
-            <td style="text-align:center;font-weight:800;color:var(--color-green);font-family:var(--font-mono);">0.9977</td>
-            <td style="text-align:center;"><span class="perf-pill win">Terpilih Retrain</span></td>
+          <tr style="background:#F0FDF4;">
+            <td style="padding:8px 12px;font-weight:700;">🥇 Random Forest</td>
+            <td style="padding:8px 12px;text-align:center;">1.7791</td>
+            <td style="padding:8px 12px;text-align:center;">2.4145</td>
+            <td style="padding:8px 12px;text-align:center;font-weight:800;color:var(--green);">0.997873</td>
+            <td style="padding:8px 12px;text-align:center;"><span style="background:var(--green);color:white;padding:2px 8px;border-radius:10px;font-size:0.75rem;">Terpilih Retrain</span></td>
+          </tr>
+          <tr style="background:#E8F5E9;">
+            <td style="padding:8px 12px;font-weight:700;">Random Forest — External Test CSV 1</td>
+            <td style="padding:8px 12px;text-align:center;">1.0252</td>
+            <td style="padding:8px 12px;text-align:center;">1.4064</td>
+            <td style="padding:8px 12px;text-align:center;font-weight:800;color:var(--green);">0.999367</td>
+            <td style="padding:8px 12px;text-align:center;"><span style="background:var(--green);color:white;padding:2px 8px;border-radius:10px;font-size:0.75rem;">Pengujian eksternal</span></td>
           </tr>
           <tr>
-            <td>CatBoost</td>
-            <td style="text-align:center;font-family:var(--font-mono);">3.2035</td>
-            <td style="text-align:center;font-family:var(--font-mono);">4.3203</td>
-            <td style="text-align:center;font-weight:700;color:var(--color-primary);font-family:var(--font-mono);">0.9931</td>
-            <td style="text-align:center;"><span class="perf-pill other">Pembanding</span></td>
+            <td style="padding:8px 12px;">CatBoost</td>
+            <td style="padding:8px 12px;text-align:center;">2.3479</td>
+            <td style="padding:8px 12px;text-align:center;">3.7960</td>
+            <td style="padding:8px 12px;text-align:center;font-weight:700;color:var(--blue);">0.994744</td>
+            <td style="padding:8px 12px;text-align:center;"><span style="background:#CBD5E0;color:white;padding:2px 8px;border-radius:10px;font-size:0.75rem;">Pembanding</span></td>
           </tr>
-          <tr>
-            <td>XGBoost</td>
-            <td style="text-align:center;font-family:var(--font-mono);">2.8696</td>
-            <td style="text-align:center;font-family:var(--font-mono);">6.0084</td>
-            <td style="text-align:center;font-weight:700;color:var(--color-primary);font-family:var(--font-mono);">0.9868</td>
-            <td style="text-align:center;"><span class="perf-pill other">Pembanding</span></td>
+          <tr style="background:#F5F7FA;">
+            <td style="padding:8px 12px;">XGBoost</td>
+            <td style="padding:8px 12px;text-align:center;">2.5089</td>
+            <td style="padding:8px 12px;text-align:center;">4.3817</td>
+            <td style="padding:8px 12px;text-align:center;font-weight:700;color:var(--blue);">0.992997</td>
+            <td style="padding:8px 12px;text-align:center;"><span style="background:#CBD5E0;color:white;padding:2px 8px;border-radius:10px;font-size:0.75rem;">Pembanding</span></td>
           </tr>
         </tbody>
       </table>
@@ -916,459 +570,352 @@ footer span{color:var(--color-primary);font-weight:600;}
 <!-- ======================== TEAM ======================== -->
 <div id="section-team" class="section">
   <div class="sec-header">
-    <span class="sec-eyebrow">Kelompok 2 · Sains Data UPN "Veteran" Jawa Timur</span>
-    <h2>Tim Mahasiswa</h2>
-    <p>Pengembang DrillSense — sistem prediksi ROP berbasis Edge AI.</p>
+    <h2>👥 Tim Mahasiswa</h2>
+    <p>Kelompok 2 · Sains Data UPN "Veteran" Jawa Timur</p>
   </div>
   <div class="team-grid" id="teamGrid"></div>
-  <div class="ai-contrib">
-    <div class="ai-contrib-header">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E40AF" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-      Kontribusi AI terhadap Industri Migas
-    </div>
-    <div class="ai-contrib-grid">
-      <div class="ai-item blue">
-        <h4>⚙️ Optimasi Produksi</h4>
-        <p>Model Random Forest memprediksi ROP dengan R²=0.9993 pada External Test CSV 1 untuk membantu menentukan WOB & RPM optimal.</p>
+
+  <div class="card" style="margin-top:1.5rem;background:var(--blue-pale);">
+    <div class="card-title" style="color:var(--blue);">📋 Kontribusi AI terhadap Industri Migas</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;">
+      <div>
+        <p style="font-weight:700;color:var(--blue);font-size:0.88rem;margin-bottom:0.3rem;">⚙️ Optimasi Produksi</p>
+        <p style="font-size:0.82rem;color:var(--text-muted);">Model Random Forest memperoleh R²=0.999367 pada External Test CSV 1 di notebook. Nilai ini merupakan hasil evaluasi dataset tersebut, bukan jaminan performa di semua sumur.</p>
       </div>
-      <div class="ai-item orange">
-        <h4>💰 Efisiensi OPEX</h4>
-        <p>Deployment Edge AI (ONNX WASM) mengeliminasi server GPU. Prediksi real-time memangkas NPT dan memperpanjang umur bit.</p>
+      <div>
+        <p style="font-weight:700;color:var(--orange);font-size:0.88rem;margin-bottom:0.3rem;">💰 Efisiensi OPEX</p>
+        <p style="font-size:0.82rem;color:var(--text-muted);">ONNX Runtime Web menjalankan inferensi di browser ketika model berhasil dimuat. Dampak terhadap NPT dan umur bit belum dievaluasi.</p>
       </div>
-      <div class="ai-item green">
-        <h4>🛡️️ Keselamatan Rig</h4>
-        <p>Indikator tiga-warna (Optimal/Moderate/Critical) memberi peringatan kondisi pengeboran berbahaya sebelum insiden terjadi.</p>
+      <div>
+        <p style="font-weight:700;color:var(--green);font-size:0.88rem;margin-bottom:0.3rem;">🛡️ Keselamatan Rig</p>
+        <p style="font-size:0.82rem;color:var(--text-muted);">Kategori visual ROP bersifat ilustratif dan tidak boleh dipakai sebagai sistem alarm keselamatan tanpa ambang batas yang tervalidasi.</p>
       </div>
     </div>
   </div>
 </div>
 
 <footer>
-  <span>DrillSense</span> · Prediksi ROP Berbasis Edge AI · Kasus 11 Industri Migas<br>
-  <span style="color:var(--color-text-faint);font-size:0.7rem;">ONNX Runtime Web (WASM) · Sains Data · UPNVJT · 2026</span>
+  <p>DrillSense · Prediksi ROP Berbasis Edge AI · Kasus 11 Industri Migas</p>
+  <p style="margin-top:4px;">Dibangun dengan ONNX Runtime Web (WASM) · Deployed on Vercel</p>
 </footer>
 
 <script>
-// ──────────────────────────────────────────
-//  NAVIGATION
-// ──────────────────────────────────────────
+// ======================================================
+//  DATA MAHASISWA & SAMPLE
+// ======================================================
+const TEAM_DATA = [
+  { name: "Muhammad Nabil Putra A.", nim: "UPNVJT", role: "Lead Technical Writer", photo: null, linkedin: "https://www.linkedin.com/in/nabil-putra/" },
+  { name: "Laisal Kaffi", nim: "UPNVJT", role: "Model Architect Specialist", photo: null, linkedin: "https://www.linkedin.com/in/laisal-kaffi-3040b1217/" },
+  { name: "Hafizh Akbar Azzidhani", nim: "UPNVJT", role: "Deployment & Edge Specialist", photo: null, linkedin: "https://linkedin.com/in/" },
+  { name: "M. C. Raka Anugrah", nim: "UPNVJT", role: "Data & Pipeline Specialist", photo: null, linkedin: "https://linkedin.com/in/" },
+  { name: "Sigit Triyono", nim: "UPNVJT", role: "Frontend & UX Specialist", photo: null, linkedin: "www.linkedin.com/in/sigit-triyono" }
+];
+
+const FEATURE_NAMES = [
+  "Rotary_Torque", "Rotary_RPM", "Standpipe_Pressure", "Weight_on_Bit",
+  "Hook_Load", "Differential_Pressure", "Inclination", "Time_Of_Penetration",
+  "Total_Mud_Volume", "Gamma_at_Bit", "Bit_Depth", "Bit_RPM", "Line_Wear",
+  "Block_Height", "Min_Pressure", "Min_Hook_Load", "Min_Torque", "Min_RPM", "Min_WOB"
+];
+const FEATURE_LABELS = {
+  Rotary_Torque: ["Rotary Torque", "kft·lbf"], Rotary_RPM: ["Rotary RPM", "rpm"],
+  Standpipe_Pressure: ["Standpipe Pressure", "psi"], Weight_on_Bit: ["Weight on Bit (WOB)", "klbf"],
+  Hook_Load: ["Hook Load", "unit sesuai dataset"], Differential_Pressure: ["Differential Pressure", "psi"],
+  Inclination: ["Inclination", "derajat"], Time_Of_Penetration: ["Time of Penetration", "unit sesuai dataset"],
+  Total_Mud_Volume: ["Total Mud Volume", "unit sesuai dataset"], Gamma_at_Bit: ["Gamma at Bit", "unit sesuai dataset"],
+  Bit_Depth: ["Bit Depth", "ft"], Bit_RPM: ["Bit RPM", "rpm"], Line_Wear: ["Line Wear", "unit sesuai dataset"],
+  Block_Height: ["Block Height", "unit sesuai dataset"], Min_Pressure: ["Minimum Pressure", "psi"],
+  Min_Hook_Load: ["Minimum Hook Load", "unit sesuai dataset"], Min_Torque: ["Minimum Torque", "unit sesuai dataset"],
+  Min_RPM: ["Minimum RPM", "rpm"], Min_WOB: ["Minimum WOB", "klbf"]
+};
+let MEDIANS = null;
+let featureNames = [...FEATURE_NAMES];
+let SAMPLE_DATA = [];
+let currentSampleActual = null;
+
+function renderFeatureInputs() {
+  const root = document.getElementById('featureInputs');
+  root.innerHTML = FEATURE_NAMES.map((name) => {
+    const meta = FEATURE_LABELS[name] || [name, 'unit sesuai dataset'];
+    return `<div class="feature-input"><label class="form-label" for="f_${name}">${meta[0]} <span>(${meta[1]})</span></label><input class="form-input" type="number" step="any" id="f_${name}" data-feature="${name}" placeholder="Masukkan nilai" required></div>`;
+  }).join('');
+  document.getElementById('numFeaturesBadge').textContent = FEATURE_NAMES.length;
+  root.querySelectorAll('input[data-feature]').forEach(el => el.addEventListener('input', updateRig));
+}
+
+function getFeature(name) {
+  const el = document.getElementById('f_' + name);
+  if (!el || el.value.trim() === '') return NaN;
+  return Number(el.value);
+}
+
+function setFeatureValues(values) {
+  FEATURE_NAMES.forEach(name => {
+    const el = document.getElementById('f_' + name);
+    if (el && values && Number.isFinite(Number(values[name]))) el.value = values[name];
+  });
+}
+
+// Fetch sample_data.json dan rop_imputation_medians.json jika tersedia di folder public
+async function loadArtifactJSONs() {
+  try {
+    const resM = await fetch('/rop_imputation_medians.json', { cache: 'no-store' });
+    if (resM.ok) {
+      const candidate = await resM.json();
+      // Accept either a direct {feature: median} object or {medians: {...}}.
+      MEDIANS = candidate.medians || candidate;
+      const complete = FEATURE_NAMES.every(name => Number.isFinite(Number(MEDIANS[name])));
+      if (complete) {
+        setFeatureValues(MEDIANS);
+        document.getElementById('inputHelp').textContent = 'Nilai awal diisi dengan median training CSV 2 dari file rop_imputation_medians.json. Ganti dengan nilai aktual rig sebelum memprediksi.';
+        document.getElementById('inputHelp').style.background = '#E8F5E9';
+      } else {
+        MEDIANS = null;
+        document.getElementById('inputHelp').textContent = 'File median ditemukan, tetapi tidak memuat semua 19 nama fitur. Isi setiap fitur secara manual; model tidak akan mengisi nilai yang hilang dengan nol.';
+      }
+    } else {
+      document.getElementById('inputHelp').textContent = 'File median training belum tersedia. Isi seluruh 19 fitur secara manual. Untuk nilai awal yang konsisten dengan notebook, letakkan rop_imputation_medians.json di folder public.';
+    }
+  } catch (e) {
+    document.getElementById('inputHelp').textContent = 'Median training tidak dapat dimuat. Isi seluruh 19 fitur secara manual.';
+  }
+}
+
 function showSection(id) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
   document.getElementById('section-' + id).classList.add('active');
   document.getElementById('nav-' + id).classList.add('active');
   if (id === 'analytics') initCharts();
+  if (id === 'team') renderTeam();
+  return false;
 }
 
-// ──────────────────────────────────────────
-//  TEAM DATA
-// ──────────────────────────────────────────
-const TEAM_DATA = [
-  { name: "Muhammad Nabil Putra A.", nim: "UPNVJT", role: "Lead Technical Writer", photo: null, linkedin: "https://www.linkedin.com/in/nabil-putra/" },
-  { name: "Laisal Kaffi", nim: "UPNVJT", role: "Model Architect Specialist", photo: null, linkedin: "https://www.linkedin.com/in/laisal-kaffi-3040b1217/" },
-  { name: "Hafizh Akbar Azzidhani", nim: "UPNVJT", role: "Deployment & Edge Specialist", photo: null, linkedin: "https://linkedin.com/in/" },
-  { name: "M. C. Raka Anugrah", nim: "UPNVJT", role: "Data & Pipeline Specialist", photo: null, linkedin: "https://linkedin.com/in/" },
-  { name: "Sigit Triyono", nim: "UPNVJT", role: "Frontend & UX Specialist", photo: null, linkedin: "https://www.linkedin.com/in/sigit-triyono" }
-];
-const initials = n => n.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
-
-function buildTeam() {
+function renderTeam() {
   const grid = document.getElementById('teamGrid');
-  if (!grid || grid.children.length > 0) return;
-  TEAM_DATA.forEach((m,i) => {
-    const hue = [211,217,268,28,200][i];
-    grid.innerHTML += `
+  if (grid.children.length) return;
+  const roleColors = { 'AI Lead': '#1565C0', 'Web Developer': '#00796B', 'MLOps Engineer': '#6A1B9A', 'Data Specialist': '#E65100', 'Technical Writer': '#2E7D32' };
+  grid.innerHTML = TEAM_DATA.map(m => `
     <div class="team-card">
-      <div class="team-avatar" style="background:hsl(${hue},60%,92%);">
-        ${m.photo ? `<img src="${m.photo}" alt="${m.name}">` : `<span style="font-size:1.4rem;font-weight:800;color:hsl(${hue},50\%,40\%)">${initials(m.name)}</span>`}
-      </div>
+      <div class="team-photo">${m.photo ? `<img src="${m.photo}" alt="${m.name}">` : '👤'}</div>
       <div class="team-name">${m.name}</div>
       <div class="team-nim">${m.nim}</div>
-      <div class="team-role">${m.role}</div>
-      <a class="btn-linkedin" href="${m.linkedin}" target="_blank">LinkedIn →</a>
-    </div>`;
-  });
-}
-buildTeam();
-
-// ──────────────────────────────────────────
-//  EXACT 17-FEATURE ARTIFACT DATA
-// ──────────────────────────────────────────
-let featureNames = [
-  "Rotary Torque", "Rotary RPM", "Standpipe Pressure", "Weight on Bit", "Hook Load", 
-  "Differential Pressure", "Inclination", "Total Mud Volume", "Gamma at Bit", "Bit RPM", 
-  "Line Wear", "Block Height", "Min Pressure", "Min Hook Load", "Min Torque", "Min RPM", "Min WOB"
-];
-
-let SAMPLE_DATA = [
-  { label:"Sample 1 · ROP 97.87 ft/hr", "Rotary Torque":1.637, "Rotary RPM":29.0, "Standpipe Pressure":2600.0, "Weight on Bit":1.1, "Hook Load":126.6, "Differential Pressure":17.9, "Inclination":2.8, "Total Mud Volume":385.8, "Gamma at Bit":-999.25, "Bit RPM":156.0, "Line Wear":133.0, "Block Height":107.8, "Min Pressure":2578.0, "Min Hook Load":126.0, "Min Torque":1.0, "Min RPM":28.0, "Min WOB":0.3, actual_rop: 97.87 },
-  { label:"Sample 2 · ROP 100.12 ft/hr", "Rotary Torque":1.996, "Rotary RPM":29.0, "Standpipe Pressure":2606.0, "Weight on Bit":1.3, "Hook Load":126.3, "Differential Pressure":23.3, "Inclination":2.8, "Total Mud Volume":385.9, "Gamma at Bit":-999.25, "Bit RPM":156.0, "Line Wear":133.0, "Block Height":106.6, "Min Pressure":2588.0, "Min Hook Load":126.0, "Min Torque":1.0, "Min RPM":28.0, "Min WOB":0.6, actual_rop: 100.12 },
-  { label:"Sample 3 · ROP 100.26 ft/hr", "Rotary Torque":1.644, "Rotary RPM":29.0, "Standpipe Pressure":2599.0, "Weight on Bit":1.1, "Hook Load":126.5, "Differential Pressure":16.1, "Inclination":2.8, "Total Mud Volume":385.7, "Gamma at Bit":-999.25, "Bit RPM":156.0, "Line Wear":133.0, "Block Height":105.6, "Min Pressure":2573.0, "Min Hook Load":126.0, "Min Torque":1.0, "Min RPM":28.0, "Min WOB":0.5, actual_rop: 100.26 },
-  { label:"Sample 4 · ROP 126.82 ft/hr", "Rotary Torque":1.389, "Rotary RPM":29.0, "Standpipe Pressure":2591.0, "Weight on Bit":1.2, "Hook Load":126.4, "Differential Pressure":8.6, "Inclination":2.8, "Total Mud Volume":385.4, "Gamma at Bit":-999.25, "Bit RPM":156.0, "Line Wear":133.0, "Block Height":104.6, "Min Pressure":2563.0, "Min Hook Load":126.0, "Min Torque":1.0, "Min RPM":28.0, "Min WOB":0.5, actual_rop: 126.82 },
-  { label:"Sample 5 · High ROP 149.11 ft/hr", "Rotary Torque":1.528, "Rotary RPM":29.0, "Standpipe Pressure":2607.0, "Weight on Bit":1.1, "Hook Load":126.4, "Differential Pressure":23.9, "Inclination":2.8, "Total Mud Volume":385.6, "Gamma at Bit":-999.25, "Bit RPM":156.0, "Line Wear":133.0, "Block Height":103.6, "Min Pressure":2588.0, "Min Hook Load":126.0, "Min Torque":1.0, "Min RPM":28.0, "Min WOB":0.6, actual_rop: 149.11 }
-];
-
-let MEDIANS = {
-  "Rotary Torque": 1.6, "Rotary RPM": 29.0, "Standpipe Pressure": 2600.0, "Weight on Bit": 1.1,
-  "Hook Load": 126.4, "Differential Pressure": 18.0, "Inclination": 2.8, "Total Mud Volume": 385.6,
-  "Gamma at Bit": -999.25, "Bit RPM": 156.0, "Line Wear": 133.0, "Block Height": 105.0,
-  "Min Pressure": 2575.0, "Min Hook Load": 126.0, "Min Torque": 1.0, "Min RPM": 28.0, "Min WOB": 0.5
-};
-
-let currentSampleActual = null;
-let currentSampleObject = null;
-
-async function loadArtifactJSONs() {
-  try {
-    const resM = await fetch('/rop_imputation_medians.json');
-    if (resM.ok) {
-      MEDIANS = await resM.json();
-      console.log('✓ Dynamic Medians Loaded:', MEDIANS);
-    }
-  } catch(e) {}
-
-  try {
-    const resS = await fetch('/sample_data.json');
-    if (resS.ok) {
-      const jsonS = await resS.json();
-      if (jsonS.samples && jsonS.feature_names) {
-        featureNames = jsonS.feature_names;
-        const numBadge = document.getElementById('numFeaturesBadge');
-        if (numBadge) numBadge.textContent = featureNames.length;
-        
-        SAMPLE_DATA = jsonS.samples.map((rowArr, i) => {
-          let obj = {};
-          jsonS.feature_names.forEach((fname, idx) => { obj[fname] = rowArr[idx]; });
-          obj.actual_rop = jsonS.y_actual ? jsonS.y_actual[i] : 100;
-          return obj;
-        });
-        console.log('✓ Dynamic Sample Data Loaded (17 Features):', SAMPLE_DATA);
-      }
-    }
-  } catch(e) {}
+      <div class="team-role" style="background:${roleColors[m.role]||'var(--blue)'}22;color:${roleColors[m.role]||'var(--blue)'}">${m.role}</div>
+      <a href="${m.linkedin}" target="_blank" rel="noopener" class="btn-linkedin">in LinkedIn</a>
+    </div>
+  `).join('');
 }
 
-function getVal(id) { return parseFloat(document.getElementById(id).value) || 0; }
-
-function syncInput(id, rid) {
-  const v = document.getElementById(rid).value;
-  document.getElementById(id).value = v;
-  document.getElementById('rv_' + id).textContent = parseFloat(v).toLocaleString();
+function getVal(id) {
+  const el = document.getElementById(id);
+  const v = el ? Number(el.value) : NaN;
+  return Number.isFinite(v) ? v : NaN;
 }
 
-function syncRange(id, rid) {
-  const v = document.getElementById(id).value;
-  document.getElementById(rid).value = v;
-  document.getElementById('rv_' + id).textContent = parseFloat(v).toLocaleString();
+function loadSample(idx) {
+  document.getElementById('inputHelp').textContent = 'Sample data sintetis dinonaktifkan agar tidak disalahartikan sebagai data pengujian aktual. Gunakan nilai dari data rig atau median training yang sah.';
 }
 
-function loadSample(i) {
-  if (!SAMPLE_DATA || !SAMPLE_DATA[i]) return;
-  const s = SAMPLE_DATA[i];
-  currentSampleObject = s;
-  
-  // Clean feature matching helper
-  const getF = (key) => s[key] ?? s[key.replace(/ /g, '_')] ?? MEDIANS[key] ?? 0;
-
-  const formMap = {
-    'wob': getF('Weight on Bit'),
-    'rpm': getF('Rotary RPM'),
-    'torque': getF('Rotary Torque'),
-    'spp': getF('Standpipe Pressure'),
-    'dp': getF('Differential Pressure'),
-    'bitrpm': getF('Bit RPM'),
-    'depth': 8000
-  };
-
-  Object.keys(formMap).forEach(f => {
-    const val = formMap[f];
-    const inputEl = document.getElementById(f);
-    const rangeEl = document.getElementById('r_' + f);
-    const valEl = document.getElementById('rv_' + f);
-
-    if (inputEl) inputEl.value = val;
-    if (rangeEl) rangeEl.value = val;
-    if (valEl) valEl.textContent = parseFloat(val).toLocaleString();
-  });
-
-  currentSampleActual = s.actual_rop;
-  updateRig();
-  runInference();
-}
-
-// ──────────────────────────────────────────
-//  ONNX INFERENCE ENGINE (PRECISE 17-FEATURE MAPPER)
-// ──────────────────────────────────────────
-let onnxReady = false, onnxSession = null, useSimulation = false;
-
-function setStatus(type, text) {
-  const el = document.getElementById('onnxStatus');
-  if (el) {
-    el.className = 'onnx-status ' + type;
-    document.getElementById('onnxStatusText').textContent = text;
+let rotAngle = 0, rafId = null, isDrilling = false, drillY = 0;
+function updateRig() {
+  const rpm = getFeature('Rotary_RPM');
+  const wob = getFeature('Weight_on_Bit');
+  const depthEl = document.getElementById('depthContext');
+  const depth = depthEl && depthEl.value.trim() !== '' ? Number(depthEl.value) : NaN;
+  const wobPct = Number.isFinite(wob) ? Math.max(0, Math.min(wob / 80, 1)) : 0;
+  const wobBar = document.getElementById('wobBar');
+  if (wobBar) {
+    wobBar.setAttribute('y', 170 - wobPct * 120);
+    wobBar.setAttribute('height', wobPct * 120);
   }
-  
-  const navDot = document.getElementById('navStatusDot');
-  const navText = document.getElementById('navStatusText');
-  if (navDot) {
-    navDot.className = 'status-dot ' + (type === 'ready' ? 'active' : type === 'fallback' ? 'error' : 'loading');
-  }
-  if (navText) navText.textContent = type === 'ready' ? 'ONNX Siap' : type === 'fallback' ? 'Simulasi' : 'Memuat…';
+  const dLabel = document.getElementById('depthLabel');
+  if (dLabel) dLabel.textContent = Number.isFinite(depth) ? Math.round(depth).toLocaleString() + ' ft' : 'Depth: —';
 }
+
+function animateRig(rop) {
+  const rpmValue = getFeature('Rotary_RPM');
+  const rpm = Number.isFinite(rpmValue) ? rpmValue : 0;
+  const speed = (rpm / 300) * 6;
+  isDrilling = true; drillY = 0;
+  if (rafId) cancelAnimationFrame(rafId);
+  const totalDrill = 40;
+  function frame() {
+    rotAngle += speed;
+    const rpmL = document.getElementById('rpmLine');
+    if (rpmL) rpmL.setAttribute('transform',`rotate(${rotAngle},0,-15)`);
+    if (drillY < totalDrill) {
+      drillY += 0.5;
+      const drillPipe = document.getElementById('drillPipe');
+      if (drillPipe) drillPipe.setAttribute('height', Math.min(drillY * 4, 150));
+    }
+    const ropL = document.getElementById('ropLabel');
+    if (ropL) ropL.textContent = `ROP: ${rop.toFixed(1)} ft/hr`;
+    rafId = requestAnimationFrame(frame);
+  }
+  frame();
+  setTimeout(() => { if (rafId) cancelAnimationFrame(rafId); isDrilling = false; }, 3000);
+}
+
+// ONNX INFERENCE — tidak ada fallback ke prediksi simulasi.
+let onnxSession = null;
+let onnxReady = false;
+let useSimulation = false;
 
 async function initONNX() {
+  setStatus('loading', 'Memuat ONNX Runtime…');
+  renderFeatureInputs();
+  await loadArtifactJSONs();
   try {
-    setStatus('loading', 'Memuat ONNX Runtime…');
-    await loadArtifactJSONs();
-    await loadScript('https://cdn.jsdelivr.net/npm/onnxruntime-web@1.17.1/dist/ort.min.js');
-    ort.env.wasm.numThreads = 1;
-    
+    if (typeof ort === 'undefined') await loadScript('https://cdnjs.cloudflare.com/ajax/libs/onnxruntime-web/1.17.1/ort.min.js');
     setStatus('loading', 'Memuat model rop_final_rf.onnx…');
-    const resp = await fetch('/rop_final_rf.onnx');
-    if (!resp.ok) throw new Error('Model file not found in /public');
+    const resp = await fetch('/rop_final_rf.onnx', { cache: 'no-store' });
+    if (!resp.ok) throw new Error('File /rop_final_rf.onnx tidak ditemukan. Letakkan model ONNX di folder public.');
     const buf = await resp.arrayBuffer();
     onnxSession = await ort.InferenceSession.create(buf, { executionProviders: ['wasm'] });
+    const input = onnxSession.inputNames[0];
+    const inputMeta = onnxSession.inputMetadata && onnxSession.inputMetadata[0];
+    const shape = inputMeta && inputMeta.shape;
+    if (shape && shape.length === 2 && typeof shape[1] === 'number' && shape[1] !== FEATURE_NAMES.length) {
+      throw new Error(`Model ONNX meminta ${shape[1]} fitur, sedangkan notebook menetapkan ${FEATURE_NAMES.length}. Ekspor ulang model yang benar.`);
+    }
     onnxReady = true;
-    setStatus('ready', 'ONNX Runtime Siap (WASM)');
-  } catch(e) {
-    console.warn('ONNX fallback:', e.message);
-    useSimulation = true;
-    setStatus('fallback', 'Mode Simulasi (ONNX Offline)');
+    setStatus('ready', `ONNX Runtime Siap · ${FEATURE_NAMES.length} fitur`);
+  } catch (e) {
+    onnxReady = false;
+    onnxSession = null;
+    setStatus('error', 'Model tidak siap: ' + e.message);
+    document.getElementById('inputHelp').textContent = 'Prediksi dinonaktifkan sampai model ONNX yang benar berhasil dimuat. Tidak ada simulasi pengganti.';
+    console.error('ONNX initialization failed:', e);
   }
 }
 
 function loadScript(src) {
   return new Promise((res, rej) => {
-    const s = document.createElement('script');
-    s.src = src; s.onload = res; s.onerror = rej;
-    document.head.appendChild(s);
+    const script = document.createElement('script');
+    script.src = src; script.onload = res; script.onerror = () => rej(new Error('Gagal memuat ONNX Runtime Web. Periksa koneksi internet atau host library.'));
+    document.head.appendChild(script);
   });
 }
 
+function setStatus(type, text) {
+  const el = document.getElementById('onnxStatus');
+  const dot = el.querySelector('.dot');
+  el.className = 'onnx-status ' + type;
+  document.getElementById('onnxStatusText').textContent = text;
+  dot.className = 'dot' + (type === 'loading' ? ' pulse' : '');
+}
+
 async function runInference() {
-  const btn = document.querySelector('.btn-primary[onclick="runInference()"]');
-  if (btn) {
-    btn.disabled = true;
-    btn.innerHTML = `Memproses…`;
+  if (!onnxReady || !onnxSession) {
+    setStatus('error', 'Prediksi dibatalkan · model ONNX belum siap');
+    return;
+  }
+  const values = FEATURE_NAMES.map(name => getFeature(name));
+  const missing = FEATURE_NAMES.filter(name => !Number.isFinite(getFeature(name)));
+  if (missing.length) {
+    document.getElementById('inputHelp').textContent = 'Lengkapi nilai fitur berikut: ' + missing.join(', ');
+    document.getElementById('inputHelp').style.background = '#FFEBEE';
+    const first = document.getElementById('f_' + missing[0]);
+    if (first) first.focus();
+    return;
   }
   const t0 = performance.now();
-  
-  const formVals = {
-    'wob': getVal('wob'), 'rpm': getVal('rpm'), 'torque': getVal('torque'),
-    'spp': getVal('spp'), 'dp': getVal('dp'), 'bitrpm': getVal('bitrpm')
-  };
-
-  let rop;
-
-  if (onnxReady && onnxSession) {
-    try {
-      // PROCESSED 17-FEATURE ARRAY IN EXACT ORDER
-      let inputVals = featureNames.map(fn => {
-        // Priority 1: Pick exact value if sample button was clicked
-        if (currentSampleObject && currentSampleObject[fn] !== undefined) {
-          return parseFloat(currentSampleObject[fn]);
-        }
-        
-        // Priority 2: Map from 6 Form Sliders (Hole Depth is excluded from 17-feature model)
-        const cleanFn = fn.replace(/_/g, ' ').toLowerCase();
-        if (cleanFn.includes('weight on bit')) return formVals.wob;
-        if (cleanFn === 'rotary rpm') return formVals.rpm;
-        if (cleanFn === 'rotary torque') return formVals.torque;
-        if (cleanFn.includes('standpipe pressure')) return formVals.spp;
-        if (cleanFn.includes('differential pressure')) return formVals.dp;
-        if (cleanFn === 'bit rpm') return formVals.bitrpm;
-
-        // Priority 3: Fill other features (Hook Load, Mud Volume, etc) from Median JSON
-        return MEDIANS[fn] !== undefined ? parseFloat(MEDIANS[fn]) : (MEDIANS[fn.replace(/ /g, '_')] ?? 0.0);
-      });
-
-      const tensor = new ort.Tensor('float32', Float32Array.from(inputVals), [1, 17]);
-      const feeds = {};
-      feeds[onnxSession.inputNames[0]] = tensor;
-      const results = await onnxSession.run(feeds);
-      
-      const outputTensor = results[onnxSession.outputNames[0]];
-      rop = Array.isArray(outputTensor.data) ? outputTensor.data[0] : outputTensor.data[0];
-
-    } catch(e) { 
-      console.error("❌ ONNX Execution Error:", e);
-      rop = currentSampleActual || 100.0;
-    }
-  } else {
-    await new Promise(r => setTimeout(r, 150));
-    rop = currentSampleActual || 100.0;
-  }
-
-  const latency = (performance.now() - t0).toFixed(2);
-  showResult(rop, latency);
-  updateRig();
-  currentSampleObject = null;
-
-  if (btn) {
-    btn.disabled = false;
-    btn.innerHTML = `⚡ Jalankan Prediksi ROP`;
+  const button = document.getElementById('predictButton');
+  button.disabled = true;
+  button.textContent = '⏳ Menghitung prediksi…';
+  try {
+    const tensor = new ort.Tensor('float32', Float32Array.from(values), [1, FEATURE_NAMES.length]);
+    const inputName = onnxSession.inputNames[0];
+    const results = await onnxSession.run({ [inputName]: tensor });
+    const outputName = onnxSession.outputNames[0];
+    const output = results[outputName];
+    if (!output || !output.data || output.data.length < 1) throw new Error('Output model ONNX kosong.');
+    const rop = Number(output.data[0]);
+    if (!Number.isFinite(rop)) throw new Error('Model menghasilkan nilai ROP non-finite.');
+    const latency = (performance.now() - t0).toFixed(2);
+    showResult(rop, latency);
+    animateRig(rop);
+  } catch (e) {
+    console.error('Inference execution error:', e);
+    setStatus('error', 'Inferensi gagal: ' + e.message);
+    document.getElementById('resultROP').textContent = '—';
+    document.getElementById('resultStatus').textContent = 'Prediksi gagal';
+    document.getElementById('resultMsg').textContent = 'Tidak ada nilai simulasi yang ditampilkan. Periksa kesesuaian model ONNX, jumlah fitur, dan tipe input.';
+    document.getElementById('resultCard').className = 'result-card idle card';
+  } finally {
+    button.disabled = false;
+    button.textContent = '⚡ Jalankan Prediksi ROP';
   }
 }
 
 function showResult(rop, latency) {
   const card = document.getElementById('resultCard');
-  card.classList.remove('optimal','moderate','slow','idle');
-  document.getElementById('resultROP').textContent = rop.toFixed(1);
+  const ropEl = document.getElementById('resultROP');
   const statusEl = document.getElementById('resultStatus');
   const msgEl = document.getElementById('resultMsg');
+  const actualEl = document.getElementById('resultActual');
+  const latEl = document.getElementById('latencyBadge');
+
+  card.classList.remove('optimal','moderate','slow','idle');
+  ropEl.textContent = rop.toFixed(1);
 
   if (rop > 120) {
     card.classList.add('optimal');
-    statusEl.innerHTML = `<span style="width:8px;height:8px;border-radius:50%;background:#16a34a;display:inline-block;"></span> OPTIMAL DRILLING`;
-    msgEl.textContent = 'Pengeboran Sangat Efisien (R² = 0.9993). Pertahankan parameter bor.';
+    statusEl.textContent = '🟢 ROP TINGGI';
+    msgEl.textContent = 'ROP berada di atas ambang visual 120 ft/hr. Ambang ini hanya indikator tampilan, bukan rekomendasi operasi tervalidasi.';
   } else if (rop >= 60) {
     card.classList.add('moderate');
-    statusEl.innerHTML = `<span style="width:8px;height:8px;border-radius:50%;background:#ca8a04;display:inline-block;"></span> MODERATE DRILLING`;
-    msgEl.textContent = 'Laju Penetrasi Sedang. Evaluasi Energi Spesifik Pengeboran (MSE).';
+    statusEl.textContent = '🟡 ROP SEDANG';
+    msgEl.textContent = 'ROP berada pada rentang visual 60–120 ft/hr. Interpretasikan bersama kondisi sumur dan penilaian operator.';
   } else {
     card.classList.add('slow');
-    statusEl.innerHTML = `<span style="width:8px;height:8px;border-radius:50%;background:#dc2626;display:inline-block;"></span> SLOW DRILLING — CRITICAL`;
-    msgEl.textContent = 'Pengeboran Lambat! Naikkan WOB / Periksa Potensi Keausan Mata Bor.';
+    statusEl.textContent = '🔴 ROP RENDAH';
+    msgEl.textContent = 'ROP di bawah 60 ft/hr menurut ambang visual. Jangan mengubah WOB atau parameter operasi hanya berdasarkan prediksi ini.';
   }
 
-  const actualEl = document.getElementById('resultActual');
-  if (currentSampleActual !== null) {
-    actualEl.style.display = 'block';
-    const err = Math.abs(rop - currentSampleActual).toFixed(2);
-    actualEl.innerHTML = `ROP Aktual CSV 1: <strong>${currentSampleActual.toFixed(1)} ft/hr</strong> &nbsp;|&nbsp; Error Prediksi: <strong>${err} ft/hr</strong>`;
-    currentSampleActual = null;
-  } else {
-    actualEl.style.display = 'none';
-  }
+  actualEl.style.display = 'none';
 
-  document.getElementById('latencyBadge').textContent = `⏱ ${latency} ms · ${useSimulation ? 'Mode Simulasi' : 'ONNX WASM'}`;
+  latEl.textContent = `⏱ Latency: ${latency} ms · Random Forest ONNX WASM`;
 }
 
-// ──────────────────────────────────────────
-//  RIG ANIMATION ENGINE
-// ──────────────────────────────────────────
-let rigAnimFrame = null;
-let bitAngle = 0;
-
-function updateRig() {
-  const rpm = getVal('rpm');
-  const wob = getVal('wob');
-  const depth = getVal('depth');
-  
-  const rpmLbl = document.getElementById('rpmLabel');
-  if (rpmLbl) rpmLbl.textContent = `RPM: ${rpm}`;
-  
-  const depthLbl = document.getElementById('depthLabel');
-  if (depthLbl) depthLbl.textContent = `${depth.toLocaleString()}ft`;
-  
-  const wobBar = document.getElementById('wobBar');
-  if (wobBar) {
-    const wobRatio = Math.min(wob / 10, 1);
-    const barH = wobRatio * 80;
-    const barY = 180 - barH;
-    wobBar.setAttribute('y', barY);
-    wobBar.setAttribute('height', barH);
-  }
-}
-
-function startBitRotation() {
-  if (rigAnimFrame) cancelAnimationFrame(rigAnimFrame);
-  
-  function animate() {
-    const rpm = getVal('rpm');
-    const speed = (rpm / 300) * 12;
-    bitAngle = (bitAngle + speed) % 360;
-    const rad = bitAngle * Math.PI / 180;
-    const cx = 0, cy = -12, r = 4;
-    const lx = cx + r * Math.sin(rad);
-    const ly = cy - r * Math.cos(rad);
-    
-    const rpmLine = document.getElementById('rpmLine');
-    if (rpmLine) {
-      rpmLine.setAttribute('x2', lx.toFixed(2));
-      rpmLine.setAttribute('y2', ly.toFixed(2));
-    }
-
-    rigAnimFrame = requestAnimationFrame(animate);
-  }
-  animate();
-}
-
-function buildFormationLayers() {
-  const svg = document.getElementById('rigSVG');
-  if (!svg || svg.querySelector('#formationGroup')) return;
-
-  const formationHTML = `
-    <g id="formationGroup" transform="translate(0,0)">
-      <rect x="0" y="192" width="320" height="200" fill="#795548"/>
-      <rect x="0" y="192" width="320" height="18" fill="#A1887F"/>
-      <rect x="0" y="210" width="320" height="22" fill="#8D6E63"/>
-      <rect x="0" y="232" width="320" height="20" fill="#6D4C41"/>
-      <rect x="0" y="252" width="320" height="20" fill="#5D4037"/>
-      <rect x="0" y="272" width="320" height="20" fill="#4E342E"/>
-      <rect id="boreholeChannel" x="152" y="192" width="16" height="200" fill="#1A1A2E" opacity="0.85" rx="1"/>
-    </g>
-  `;
-
-  const bitGroup = svg.querySelector('#drillBitGroup');
-  if (bitGroup) bitGroup.insertAdjacentHTML('beforebegin', formationHTML);
-}
-
-// ──────────────────────────────────────────
-//  CHARTS
-// ──────────────────────────────────────────
+// CHARTS — angka metrik berasal dari output notebook, bukan dihitung dari sampel buatan.
 let chartsInited = false;
 function initCharts() {
   if (chartsInited) return;
-  
-  const cDepth = document.getElementById('chartDepth');
-  const cParams = document.getElementById('chartParams');
-  const cPerf = document.getElementById('chartPerf');
-
-  if (!cDepth || !cParams || !cPerf) return;
-
   chartsInited = true;
-
-  new Chart(cDepth, {
-    type:'line',
-    data:{
-      labels: ['3,200 ft', '5,500 ft', '7,800 ft', '14,200 ft', '17,000 ft'],
-      datasets:[
-        { label:'ROP Aktual (CSV 1)', data:[97.87, 100.12, 100.26, 126.82, 149.11], borderColor:'#1E40AF', backgroundColor:'rgba(30,64,175,0.08)', fill:true, tension:0.4, pointRadius:5 },
-        { label:'ROP Prediksi RF', data:[97.80, 100.10, 100.20, 126.80, 149.05], borderColor:'#D97706', backgroundColor:'transparent', borderDash:[5,3], tension:0.4, pointRadius:4 }
+  new Chart(document.getElementById('chartDepth'), {
+    type: 'bar',
+    data: {
+      labels: ['Validation CSV 2', 'External Test CSV 1'],
+      datasets: [
+        { label: 'MAE (ft/hr)', data: [1.779104, 1.025209], backgroundColor: '#1565C0', borderRadius: 4 },
+        { label: 'RMSE (ft/hr)', data: [2.414522, 1.406425], backgroundColor: '#E65100', borderRadius: 4 }
       ]
     },
-    options:{ responsive:true, maintainAspectRatio:false }
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' }, title: { display: true, text: 'Metrik evaluasi dari notebook' } } }
   });
-
-  new Chart(cParams, {
-    type:'bar',
-    data:{
-      labels:['Rotary Torque', 'Rotary RPM', 'Standpipe Press', 'Weight on Bit', 'Differential Press', 'Bit RPM'],
-      datasets:[{ label:'Importance (%)', data:[32.1, 24.5, 18.2, 11.4, 8.3, 5.5], backgroundColor:['#1E40AF','#2563EB','#3B82F6','#60A5FA','#93C5FD','#BFDBFE'], borderRadius:5 }]
+  new Chart(document.getElementById('chartParams'), {
+    type: 'bar',
+    data: {
+      labels: ['Time Of Penetration','Bit Depth','Block Height','Min WOB','Hook Load','Weight on Bit','Min Hook Load','Line Wear','Total Mud Volume','Rotary Torque','Differential Pressure','Gamma at Bit','Min Pressure','Standpipe Pressure','Inclination','Min Torque','Bit RPM','Min RPM','Rotary RPM'],
+      datasets: [{ label: 'Feature importance (%)', data: [90.59774,3.367357,3.198718,1.271569,1.021078,0.379126,0.1041502,0.02907333,0.02427889,0.006005864,0.0002247234,0.0001854243,0.0001607946,0.0001386268,0.0000998551,0.00004596699,0.00003349391,0.00001231407,0.000005484305], backgroundColor: '#1976D2', borderRadius: 4 }] 
     },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } } }
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { title: { display: true, text: 'Importance (%)' } } } }
   });
-
-  new Chart(cPerf, {
-    type:'bar',
-    data:{
-      labels:['Random Forest','CatBoost','XGBoost'],
-      datasets:[
-        { label:'RMSE Validation (CSV 2)', data:[2.47, 4.32, 6.00], backgroundColor:['#15803D','#3B82F6','#8B5CF6'], borderRadius:6 }
+  new Chart(document.getElementById('chartPerf'), {
+    type: 'bar',
+    data: {
+      labels: ['RF Validation CSV 2', 'RF External Test CSV 1', 'CatBoost Validation CSV 2', 'XGBoost Validation CSV 2'],
+      datasets: [
+        { label: 'RMSE (ft/hr)', data: [2.414522,1.406425,3.796007,4.381742], backgroundColor: ['#1565C0','#2E7D32','#CBD5E0','#CBD5E0'], borderRadius: 4 }
       ]
     },
-    options:{ responsive:true, maintainAspectRatio:false, indexAxis:'y' }
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } }
   });
 }
 
-// ──────────────────────────────────────────
-//  INIT
-// ──────────────────────────────────────────
 initONNX();
 updateRig();
-startBitRotation();
-buildFormationLayers();
 </script>
 </body>
 </html>
