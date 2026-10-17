@@ -763,9 +763,11 @@ let useSimulation = false;
 
 async function initONNX() {
   setStatus('loading', 'Memuat ONNX Runtime…');
-  renderFeatureInputs();
-  await loadArtifactJSONs();
+  
   try {
+    renderFeatureInputs();
+    await loadArtifactJSONs();
+  
     if (typeof ort === 'undefined') await loadScript('https://cdnjs.cloudflare.com/ajax/libs/onnxruntime-web/1.17.1/ort.min.js');
     setStatus('loading', 'Memuat model rop_final_rf.onnx…');
     const resp = await fetch('/rop_final_rf.onnx', { cache: 'no-store' });
