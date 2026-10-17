@@ -768,7 +768,7 @@ async function initONNX() {
     renderFeatureInputs();
     await loadArtifactJSONs();
   
-    if (typeof ort === 'undefined') await loadScript('https://cdnjs.cloudflare.com/ajax/libs/onnxruntime-web/1.17.1/ort.min.js');
+    if (typeof ort === 'undefined') await loadScript('https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js');
     setStatus('loading', 'Memuat model rop_final_rf.onnx…');
     const resp = await fetch('/rop_final_rf.onnx', { cache: 'no-store' });
     if (!resp.ok) throw new Error('File /rop_final_rf.onnx tidak ditemukan. Letakkan model ONNX di folder public.');
