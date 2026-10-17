@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DrillSense — ROP Prediction | Edge AI</title>
-<script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.16.3/dist/ort.min.js"></script>
+<!-- ONNX Runtime tidak dipakai, model berjalan via JSON RF -->
 <style>
   :root {
     --blue: #1565C0;
@@ -816,7 +816,6 @@ function setStatus(type, text) {
 }
 
 async function runInference() {
-  async function runInference() {
   if (!onnxReady || !rfModel) {
     setStatus('error', 'Prediksi dibatalkan · model belum siap');
     return;
@@ -838,7 +837,6 @@ async function runInference() {
 
   const t0 = performance.now();
   try {
-    // Jalankan di setTimeout agar UI tidak freeze saat traverse 50 pohon
     const rop = await new Promise(resolve => {
       setTimeout(() => resolve(predictRF(values)), 0);
     });
@@ -888,7 +886,7 @@ function showResult(rop, latency) {
 
   actualEl.style.display = 'none';
 
-  latEl.textContent = `⏱ Latency: ${latency} ms · Random Forest ONNX WASM`;
+  latEl.textContent = `⏱ Latency: ${latency} ms · Random Forest JSON (50 pohon)`;
 }
 
 // CHARTS — angka metrik berasal dari output notebook, bukan dihitung dari sampel buatan.
