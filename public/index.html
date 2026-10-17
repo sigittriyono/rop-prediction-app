@@ -760,51 +760,44 @@ function animateRig(rop) {
 let onnxSession = null;
 let onnxReady = false;
 let useSimulation = false;
+// ── STATE ──
+let rfModel = null;
 
-async function initONNX() {
-  setStatus('loading', 'Memuat ONNX Runtime…');
+function predictRF(values) {
+  let total = 0;
+  for (const tree of rfModel.trees) {
+    let node = 0;
+    while (!tree[node].leaf) {
+      node = values[tree[node].feature] <= tree[node].threshold
+        ? tree[node].left
+        : tree[node].right;
+    }
+    total += tree[node].value;
+  }
+  return total / rfModel.trees.length;
   
+}
+async function initONNX() {
+  setStatus('loading', 'Memuat model…');
   try {
     renderFeatureInputs();
     await loadArtifactJSONs();
-  
-    if (typeof ort === 'undefined') await loadScript('https://cdn.jsdelivr.net/npm/onnxruntime-web@1.14.0/dist/ort.min.js');
-    ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.14.0/dist/';
-    ort.env.wasm.numThreads = 1;
-    setStatus('loading', 'Memuat model rop_final_rf.onnx…');
-    const resp = await fetch('/rop_final_rf.onnx', { cache: 'no-store' });
-    if (!resp.ok) throw new Error('File /rop_final_rf.onnx tidak ditemukan. Letakkan model ONNX di folder public.');
-    const buf = await resp.arrayBuffer();
-    ort.env.wasm.numThreads = 1;
-    onnxSession = await ort.InferenceSession.create(buf, { executionProviders: ['wasm'] });
-    const input = onnxSession.inputNames[0];
-    const inputMeta = onnxSession.inputMetadata && onnxSession.inputMetadata[0];
-    const shape = inputMeta && inputMeta.shape;
-    if (shape && shape.length === 2 && typeof shape[1] === 'number' && shape[1] !== FEATURE_NAMES.length) {
-      throw new Error(`Model ONNX meminta ${shape[1]} fitur, sedangkan notebook menetapkan ${FEATURE_NAMES.length}. Ekspor ulang model yang benar.`);
-    }
+
+    const resp = await fetch('/rop_rf_model.json', { cache: 'no-store' });
+    if (!resp.ok) throw new Error('File /rop_rf_model.json tidak ditemukan (' + resp.status + ')');
+    rfModel = await resp.json();
+
     onnxReady = true;
-    setStatus('ready', `ONNX Runtime Siap · ${FEATURE_NAMES.length} fitur`);
+    setStatus('ready', `Model RF Siap · ${rfModel.n_estimators} pohon · ${rfModel.n_features} fitur`);
   } catch (e) {
     onnxReady = false;
-    onnxSession = null;
-  
-    console.error('ONNX initialization failed:', e);
-    console.error('Error type:', typeof e);
-    console.error('Error details:', JSON.stringify(e));
-    console.error('Error stack:', e?.stack);
-  
-    const message =
-      e instanceof Error
-        ? e.message
-        : `${typeof e}: ${String(e)}`;
-  
-    setStatus('error', 'Model tidak siap: ' + message);
-  
+    console.error('Model load failed:', e);
+    setStatus('error', 'Model gagal dimuat: ' + e.message);
     document.getElementById('inputHelp').textContent =
       'Prediksi dinonaktifkan karena model gagal dimuat.';
   }
 }
+
 
 function loadScript(src) {
   return new Promise((res, rej) => {
@@ -823,12 +816,14 @@ function setStatus(type, text) {
 }
 
 async function runInference() {
-  if (!onnxReady || !onnxSession) {
-    setStatus('error', 'Prediksi dibatalkan · model ONNX belum siap');
+  async function runInference() {
+  if (!onnxReady || !rfModel) {
+    setStatus('error', 'Prediksi dibatalkan · model belum siap');
     return;
   }
+
   const values = FEATURE_NAMES.map(name => getFeature(name));
-  const missing = FEATURE_NAMES.filter(name => !Number.isFinite(getFeature(name)));
+  const missing = FEATURE_NAMES.filter((_, i) => !Number.isFinite(values[i]));
   if (missing.length) {
     document.getElementById('inputHelp').textContent = 'Lengkapi nilai fitur berikut: ' + missing.join(', ');
     document.getElementById('inputHelp').style.background = '#FFEBEE';
@@ -836,28 +831,29 @@ async function runInference() {
     if (first) first.focus();
     return;
   }
-  const t0 = performance.now();
+
   const button = document.getElementById('predictButton');
   button.disabled = true;
   button.textContent = '⏳ Menghitung prediksi…';
+
+  const t0 = performance.now();
   try {
-    const tensor = new ort.Tensor('float32', Float32Array.from(values), [1, FEATURE_NAMES.length]);
-    const inputName = onnxSession.inputNames[0];
-    const results = await onnxSession.run({ [inputName]: tensor });
-    const outputName = onnxSession.outputNames[0];
-    const output = results[outputName];
-    if (!output || !output.data || output.data.length < 1) throw new Error('Output model ONNX kosong.');
-    const rop = Number(output.data[0]);
+    // Jalankan di setTimeout agar UI tidak freeze saat traverse 50 pohon
+    const rop = await new Promise(resolve => {
+      setTimeout(() => resolve(predictRF(values)), 0);
+    });
+
     if (!Number.isFinite(rop)) throw new Error('Model menghasilkan nilai ROP non-finite.');
+
     const latency = (performance.now() - t0).toFixed(2);
     showResult(rop, latency);
     animateRig(rop);
   } catch (e) {
-    console.error('Inference execution error:', e);
+    console.error('Inference error:', e);
     setStatus('error', 'Inferensi gagal: ' + e.message);
     document.getElementById('resultROP').textContent = '—';
     document.getElementById('resultStatus').textContent = 'Prediksi gagal';
-    document.getElementById('resultMsg').textContent = 'Tidak ada nilai simulasi yang ditampilkan. Periksa kesesuaian model ONNX, jumlah fitur, dan tipe input.';
+    document.getElementById('resultMsg').textContent = e.message;
     document.getElementById('resultCard').className = 'result-card idle card';
   } finally {
     button.disabled = false;
