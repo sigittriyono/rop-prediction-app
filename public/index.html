@@ -944,14 +944,26 @@ function showResult(rop, latency) {
   $('resultROP').textContent = rop.toFixed(1);
   let cls, tag, cat, msg;
   if (rop > 120) {
-    cls = 'high'; tag = 'ROP Tinggi'; cat = '> 120 ft/hr';
-    msg = 'ROP berada di atas ambang visual 120 ft/hr. Ambang ini hanya indikator tampilan, <b>bukan rekomendasi operasi tervalidasi</b>.';
+    cls = 'high';
+    tag = 'ROP Tinggi';
+    cat = '> 120 ft/hr';
+    msg = `Model memprediksi ROP sebesar ${rop.toFixed(1)} ft/hr,
+          termasuk kategori ROP tinggi berdasarkan ambang visual aplikasi.
+          Nilai ini ${((rop - 120)).toFixed(1)} ft/hr di atas ambang 120 ft/hr.`;
   } else if (rop >= 60) {
-    cls = 'mid'; tag = 'ROP Sedang'; cat = '60 – 120 ft/hr';
-    msg = 'ROP pada rentang visual 60–120 ft/hr. Interpretasikan bersama kondisi sumur dan <b>penilaian operator</b>.';
+    cls = 'mid';
+    tag = 'ROP Sedang';
+    cat = '60 – 120 ft/hr';
+    msg = `Model memprediksi ROP sebesar ${rop.toFixed(1)} ft/hr,
+          termasuk kategori ROP sedang berdasarkan ambang visual aplikasi.
+          Nilai ini berada dalam rentang 60–120 ft/hr.`;
   } else {
-    cls = 'low'; tag = 'ROP Rendah'; cat = '< 60 ft/hr';
-    msg = 'ROP di bawah 60 ft/hr menurut ambang visual. <b>Jangan mengubah WOB atau parameter operasi</b> hanya berdasarkan prediksi ini.';
+    cls = 'low';
+    tag = 'ROP Rendah';
+    cat = '< 60 ft/hr';
+    msg = `Model memprediksi ROP sebesar ${rop.toFixed(1)} ft/hr,
+        termasuk kategori ROP rendah berdasarkan ambang visual aplikasi.
+        Nilai ini ${ (60 - rop).toFixed(1) } ft/hr di bawah ambang 60 ft/hr.`;
   }
   ro.classList.add(cls);
   $('resultStatus').textContent = tag;
