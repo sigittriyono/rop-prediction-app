@@ -2,7 +2,7 @@
 
 DrillSense adalah aplikasi web untuk memperkirakan **Rate of Penetration (ROP)** pemboran menggunakan model **Random Forest**. Aplikasi menyediakan input parameter pemboran, prediksi ROP, visualisasi rig, interpretasi hasil, serta ringkasan evaluasi model.
 
-- **Demo aplikasi:** https://sigittriyono-rop-prediction-9m38qhzwq-kelompok-2-2f9b.vercel.app/
+- **Demo aplikasi:** https://rop-prediction-app.vercel.app/
 - **Repository:** https://github.com/sigittriyono/rop-prediction-app
 
 ## Fitur
