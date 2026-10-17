@@ -773,6 +773,7 @@ async function initONNX() {
     const resp = await fetch('/rop_final_rf.onnx', { cache: 'no-store' });
     if (!resp.ok) throw new Error('File /rop_final_rf.onnx tidak ditemukan. Letakkan model ONNX di folder public.');
     const buf = await resp.arrayBuffer();
+    ort.env.wasm.numThreads = 1;
     onnxSession = await ort.InferenceSession.create(buf, { executionProviders: ['wasm'] });
     const input = onnxSession.inputNames[0];
     const inputMeta = onnxSession.inputMetadata && onnxSession.inputMetadata[0];
@@ -785,9 +786,21 @@ async function initONNX() {
   } catch (e) {
     onnxReady = false;
     onnxSession = null;
-    setStatus('error', 'Model tidak siap: ' + e.message);
-    document.getElementById('inputHelp').textContent = 'Prediksi dinonaktifkan sampai model ONNX yang benar berhasil dimuat. Tidak ada simulasi pengganti.';
+  
     console.error('ONNX initialization failed:', e);
+    console.error('Error type:', typeof e);
+    console.error('Error details:', JSON.stringify(e));
+    console.error('Error stack:', e?.stack);
+  
+    const message =
+      e instanceof Error
+        ? e.message
+        : `${typeof e}: ${String(e)}`;
+  
+    setStatus('error', 'Model tidak siap: ' + message);
+  
+    document.getElementById('inputHelp').textContent =
+      'Prediksi dinonaktifkan karena model gagal dimuat.';
   }
 }
 
