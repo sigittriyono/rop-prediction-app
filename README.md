@@ -146,11 +146,11 @@ Proyek ini dikembangkan oleh **Kelompok 2 — Sains Data, UPN “Veteran” Jawa
 
 | Nama | NIM/Institusi | Peran | LinkedIn |
 |---|---|---|---|
-| Muhammad Nabil Putra A. | UPNVJT | Lead Technical Writer | [Profil LinkedIn](https://www.linkedin.com/in/nabil-putra/) |
-| Laisal Kaffi | UPNVJT | Model Architect Specialist | [Profil LinkedIn](https://www.linkedin.com/in/laisal-kaffi-3040b1217/) |
-| Hafizh Akbar Azzidhani | UPNVJT | Deployment & Edge Specialist | [Profil LinkedIn](https://www.linkedin.com/in/hafizh-akbar-135b27433/) |
-| M. C. Raka Anugrah | UPNVJT | Data & Pipeline Specialist | [Profil LinkedIn](https://www.linkedin.com/in/m-c-raka-anugrah/) |
-| Sigit Triyono | UPNVJT | Frontend & UX Specialist | [Profil LinkedIn](https://www.linkedin.com/in/sigit-triyono) |
+| Muhammad Nabil Putra A. | 23083010074 - UPNVJT | Lead Technical Writer | [Profil LinkedIn](https://www.linkedin.com/in/nabil-putra/) |
+| Laisal Kaffi | 23083010055 - UPNVJT | Model Architect Specialist | [Profil LinkedIn](https://www.linkedin.com/in/laisal-kaffi-3040b1217/) |
+| Hafizh Akbar Azzidhani | 23083010069 - UPNVJT | Deployment & Edge Specialist | [Profil LinkedIn](https://www.linkedin.com/in/hafizh-akbar-135b27433/) |
+| M. C. Raka Anugrah | 23083010070 - UPNVJT | Data & Pipeline Specialist | [Profil LinkedIn](https://www.linkedin.com/in/m-c-raka-anugrah/) |
+| Sigit Triyono | 23083010071 - UPNVJT | Frontend & UX Specialist | [Profil LinkedIn](https://www.linkedin.com/in/sigit-triyono) |
 
 ---
 
