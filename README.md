@@ -40,7 +40,6 @@ rop-prediction-app/
 │   └── Kasus_11_ROP_BOSQUUUUU!!!.ipynb
 ├── public/
 │   ├── index.html
-│   ├── ROP-Prediction.html
 │   ├── rop_final_rf.onnx
 │   ├── rop_imputation_medians.json
 │   ├── rop_rf_model.json
@@ -54,7 +53,6 @@ rop-prediction-app/
 | File | Keterangan |
 |---|---|
 | `public/index.html` | Halaman utama aplikasi DrillSense. |
-| `public/ROP-Prediction.html` | Halaman aplikasi versi lama yang masih memuat alur inferensi ONNX Runtime Web. |
 | `public/rop_rf_model.json` | Struktur model Random Forest yang digunakan halaman utama `index.html` untuk prediksi. |
 | `public/rop_imputation_medians.json` | Nilai median yang dapat digunakan untuk membantu melengkapi input fitur. |
 | `public/sample_data.json` | Data sample dalam format JSON. |
